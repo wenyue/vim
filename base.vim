@@ -73,7 +73,7 @@ function! SaveAsUTF8()
 	set fileencoding=UTF-8
 	set nobomb
 endfunction
-autocmd FileType lua,python :call :SaveAsUTF8()
+autocmd FileType lua,python,vim :call SaveAsUTF8()
 
 
 " -------------------------------------≤Âº˛≈‰÷√---------------------------------

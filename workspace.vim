@@ -1,3 +1,3 @@
 autocmd! bufwritepost workspace.vim source %
-" Ì¹¿ËÊÖÓÎ
+" å¦å…‹æ‰‹æ¸¸
 source $VIM/vimfiles/plugged/vim/G59_client.vim
