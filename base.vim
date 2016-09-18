@@ -73,7 +73,7 @@ function! SaveAsUTF8()
 	set fileencoding=UTF-8
 	set nobomb
 endfunction
-autocmd FileType lua,python,vim :call :SaveAsUTF8()
+autocmd FileType lua,python :call :SaveAsUTF8()
 
 
 " -------------------------------------≤Âº˛≈‰÷√---------------------------------
@@ -113,6 +113,9 @@ let g:pyflakes_use_quickfix = 0
 
 " molokai settings
 let g:rehash256 = 1
+set background=dark
+set t_Co=256
+execute 'source $VIM/vimfiles/plugged/molokai/colors/molokai.vim'
 
 
 " -------------------------------------œÓƒø≈‰÷√---------------------------------
@@ -131,11 +134,11 @@ endfunction
 nnoremap <silent> <leader>r :call OpenDir(expand('%')) <CR>
 
 function! ToWinPath(path)
-	return substitute(a:path, '/', '\', 'g')
+	return substitute(substitute(a:path, '/', '\', 'g'), ' ', '\\ ', 'g')
 endfunction
 
 function! ToUnixPath(path)
-	return substitute(a:path, '\', '/', 'g')
+	return substitute(substitute(a:path, '\', '/', 'g'), ' ', '\\ ', 'g')
 endfunction
 
 let s:workspace = findfile('workspace.vim', '.;')
