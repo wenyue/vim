@@ -69,16 +69,17 @@ set shiftwidth=4
 set shiftround
 
 " 使用utf-8编码
-function! s:SaveAsUTF8()
+function! SaveAsUTF8()
 	set fileencoding=UTF-8
 	set nobomb
 endfunction
-autocmd FileType lua,python :call s:SaveAsUTF8()
+autocmd FileType lua,python,vim :call :SaveAsUTF8()
 
 
 " -------------------------------------插件配置---------------------------------
 call plug#begin('$VIM/vimfiles/plugged')
 
+Plug 'wenyue/vim'
 " 文件查找
 Plug 'kien/ctrlp.vim' | Plug 'adonis0147/ctrlp-cIndexer'
 Plug 'FelikZ/ctrlp-py-matcher'
