@@ -1,9 +1,9 @@
 autocmd! bufwritepost G59_client.vim source %
 
-" 配置
+" 閰嶇疆
 let s:script = g:dir.'script/'
 
-" 设置path
+" 璁剧疆path
 function! SetPath()
 	set path=.
 	silent execute 'set path+='.s:script.'**'
@@ -16,16 +16,17 @@ function! CtrlP()
 endfunction
 map <silent> <leader>f :call CtrlP() <CR>
 
-" 运行程序
+" 杩愯绋嬪簭
 function! Exe(program)
 python << EOF
 import vim
 import subprocess
+work_dir = vim.eval('g:dir')
 program = vim.eval('a:program')
 if program == 'game0':
 	if os.path.exists('Documents/user.info'):
 		os.remove('Documents/user.info')
-		subprocess.Popen('bin/win32/client.exe')
+		subprocess.Popen(work_dir + 'gamemirror.exe')
 elif program in ['game1', 'game2']:
 	game_num = int(program[4])
 	from win32api import GetSystemMetrics
@@ -36,7 +37,7 @@ elif program in ['game1', 'game2']:
 	# create game
 	for index in range(1, game_num + 1):
 		user_info = 'user%d.info' % index
-		subprocess.Popen(['gamemirror.exe', '--userinfo', user_info])
+		subprocess.Popen([work_dir + 'gamemirror.exe', '--userinfo', user_info])
 
 	def getWindowSize(hwnd):
 		rect = win32gui.GetWindowRect(hwnd)
@@ -96,7 +97,7 @@ EOF
 endfunction
 command! -nargs=1 Exe :call Exe('<args>')
 
-" 运行游戏
+" 杩愯娓告垙
 map <silent> <F4> :call Exe('game0') <CR>
 map <silent> <F5> :call Exe('game1') <CR>
 map <silent> <F6> :call Exe('game2') <CR>

@@ -1,74 +1,75 @@
-" -------------------------------------»ù´¡ÅäÖÃ---------------------------------
+" -------------------------------------åŸºç¡€é…ç½®---------------------------------
 autocmd! bufwritepost vimrc source %
 
-" ×Ô¶¯¶ÁÈ¡±ä¸ü
+" è‡ªåŠ¨è¯»å–å˜æ›´
 set autoread
 
-" ºöÂÔ´óĞ¡Ğ´
+" å¿½ç•¥å¤§å°å†™
 set ignorecase
 set smartcase
 
-" Ê¹ÓÃÊó±ê
+" ä½¿ç”¨é¼ æ ‡
 set mouse=a
 
-" ×Ô¶¯¸ü¸Ä¹¤×÷Ä¿Â¼
+" è‡ªåŠ¨æ›´æ”¹å·¥ä½œç›®å½•
 set autochdir
 
-" È¡Ïû±¸·İ
+" å–æ¶ˆå¤‡ä»½
 set nobackup
 set noswapfile
+set noundofile
 
-" Òş²Ø»º³åÇø
+" éšè—ç¼“å†²åŒº
 set hidden
 
-" ÄÚ²¿±àÂë
+" å†…éƒ¨ç¼–ç 
 set encoding=UTF-8
 set langmenu=zh_CN.UTF-8
 language message zh_CN.UTF-8
 source $VIMRUNTIME/delmenu.vim
 source $VIMRUNTIME/menu.vim
 
-" ÉèÖÃ<leader>
+" è®¾ç½®<leader>
 let mapleader=','
 
-" ÉèÖÃ²¹È«Ë³Ğò
+" è®¾ç½®è¡¥å…¨é¡ºåº
 set cpt=.,w,b
 
-" ²»Òª·¢³öbellÉùÒô
+" ä¸è¦å‘å‡ºbellå£°éŸ³
 set vb 
 
 
-" -------------------------------------½çÃæÅäÖÃ---------------------------------
-" ÏÔÊ¾ĞĞºÅ
+" -------------------------------------ç•Œé¢é…ç½®---------------------------------
+" æ˜¾ç¤ºè¡Œå·
 set number
 
-" ÏÔÊ¾µ±Ç°Î»ÖÃ
+" æ˜¾ç¤ºå½“å‰ä½ç½®
 set ruler
 
-" ËÑË÷¸ßÁÁ
+" æœç´¢é«˜äº®
 set hlsearch
 
-" ÉÏÏÂÎÄĞĞÊı
+" ä¸Šä¸‹æ–‡è¡Œæ•°
 set so=5
 
 
-" -------------------------------------±à¼­ÅäÖÃ---------------------------------
-" ÖÇÄÜtab
+" -------------------------------------ç¼–è¾‘é…ç½®---------------------------------
+" æ™ºèƒ½tab
 set smarttab
 
-" ÖÇÄÜËõ½ø
+" æ™ºèƒ½ç¼©è¿›
 set autoindent
 
-" tab³¤¶È
+" tabé•¿åº¦
 set tabstop=4
 set softtabstop=4
 set noexpandtab
 
-" »»ĞĞ
+" æ¢è¡Œ
 set shiftwidth=4
 set shiftround
 
-" Ê¹ÓÃutf-8±àÂë
+" ä½¿ç”¨utf-8ç¼–ç 
 function! SaveAsUTF8()
 	set fileencoding=UTF-8
 	set nobomb
@@ -76,18 +77,18 @@ endfunction
 autocmd FileType lua,python,vim :call SaveAsUTF8()
 
 
-" -------------------------------------²å¼şÅäÖÃ---------------------------------
+" -------------------------------------æ’ä»¶é…ç½®---------------------------------
 call plug#begin('$VIM/vimfiles/plugged')
 
 Plug 'wenyue/vim'
-" ÎÄ¼ş²éÕÒ
+" æ–‡ä»¶æŸ¥æ‰¾
 Plug 'kien/ctrlp.vim' | Plug 'adonis0147/ctrlp-cIndexer'
 Plug 'FelikZ/ctrlp-py-matcher'
-" ×Ô¶¯²¹È«
+" è‡ªåŠ¨è¡¥å…¨
 "Plug 'Valloric/YouCompleteMe', {'do': 'python install.py'}
-" Óï·¨¼ì²â
+" è¯­æ³•æ£€æµ‹
 Plug 'kevinw/pyflakes-vim', {'for': 'python'}
-" Ö÷Ìâ
+" ä¸»é¢˜
 Plug 'tomasr/molokai'
 
 call plug#end()
@@ -103,7 +104,7 @@ let g:ctrlp_match_func = { 'match': 'pymatcher#PyMatch' }
 " YouCompleteMe settings
 "set completeopt=longest,menu
 "autocmd InsertLeave * if pumvisible() == 0|pclose|endif
-"nnoremap <leader>d :YcmCompleter GoToDefinitionElseDeclaration<CR> " Ìø×ªµ½¶¨Òå´¦
+"nnoremap <leader>d :YcmCompleter GoToDefinitionElseDeclaration<CR> " è·³è½¬åˆ°å®šä¹‰å¤„
 "let g:ycm_complete_in_comments = 1
 "let g:ycm_complete_in_strings = 1
 "let g:ycm_seed_identifiers_with_syntax = 1
@@ -118,8 +119,8 @@ set t_Co=256
 execute 'source $VIM/vimfiles/plugged/molokai/colors/molokai.vim'
 
 
-" -------------------------------------ÏîÄ¿ÅäÖÃ---------------------------------
-" ÏÔÊ¾Í¼Æ¬
+" -------------------------------------é¡¹ç›®é…ç½®---------------------------------
+" æ˜¾ç¤ºå›¾ç‰‡
 function! s:OpenPic(file)
 	silent execute '!' a:file
 	silent execute 'b #'
@@ -127,7 +128,7 @@ function! s:OpenPic(file)
 endfunction
 autocmd! bufenter *.jpg,*.png :call s:OpenPic(expand('<afile>'))
 
-" ´ò¿ªÎÄ¼şËùÔÚÄ¿Â¼
+" æ‰“å¼€æ–‡ä»¶æ‰€åœ¨ç›®å½•
 function! OpenDir(filename)
 	silent execute '!start explorer /select,' a:filename
 endfunction
@@ -145,7 +146,7 @@ let s:workspace = findfile('workspace.vim', '.;')
 if !empty(s:workspace)
 	let g:dir = ToUnixPath(fnamemodify(s:workspace, ":p:h").'\')
 
-	" ÏÔÊ¾×´Ì¬ĞĞ
+	" æ˜¾ç¤ºçŠ¶æ€è¡Œ
 	set laststatus=2
 	function! ShowPath()
 		let filename = ToUnixPath(expand('%:p'))
@@ -153,7 +154,7 @@ if !empty(s:workspace)
 	endfunction
 	set statusline=%<%{ShowPath()}\ %h%m%r%=%-14.(%l,%c%V%)\ %P
 
-	" ¶ÁÈ¡ÏîÄ¿ÅäÖÃ
-	execute 'source '.s:workspace
+	" è¯»å–é¡¹ç›®é…ç½®
+	silent execute 'source '.s:workspace
 endif
 
