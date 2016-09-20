@@ -1,6 +1,9 @@
 " -------------------------------------基础配置---------------------------------
 autocmd! bufwritepost vimrc source %
 
+" 不兼容vi
+set nocompatible
+
 " 自动读取变更
 set autoread
 
