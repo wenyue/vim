@@ -119,11 +119,10 @@ let g:pyflakes_use_quickfix=0
 
 " 主题
 Plug 'tomasr/molokai'
-let g:rehash256=1
-set background=dark
-set t_Co=256
 let s:molokai_path=g:plugged_path.'/molokai/colors/molokai.vim'
-if filereadable(s:molokai_path)
+if filereadable(s:molokai_path) && (!exists('g:colors_name') || g:colors_name!="molokai")
+	let g:rehash256=1
+	set t_Co=256
 	execute 'source' s:molokai_path
 endif
 
