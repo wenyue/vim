@@ -1,6 +1,5 @@
+autocmd! bufwritepost base.vim source %
 " -------------------------------------基础配置---------------------------------
-autocmd! bufwritepost vimrc source %
-
 " 不兼容vi
 set nocompatible
 
@@ -84,7 +83,7 @@ autocmd FileType lua,python,vim :call SaveAsUTF8()
 
 
 " -------------------------------------插件配置---------------------------------
-let g:plugged_path = '$VIM/vimfiles/plugged'
+let g:plugged_path=expand('<sfile>:p:h:h')
 call plug#begin(g:plugged_path)
 Plug 'wenyue/vim'
 
@@ -123,7 +122,10 @@ Plug 'tomasr/molokai'
 let g:rehash256=1
 set background=dark
 set t_Co=256
-execute 'source '.g:plugged_path.'/molokai/colors/molokai.vim'
+let s:molokai_path=g:plugged_path.'/molokai/colors/molokai.vim'
+if filereadable(s:molokai_path)
+	execute 'source' s:molokai_path
+endif
 
 call plug#end()
 
@@ -164,6 +166,6 @@ if !empty(s:workspace)
 	set statusline=%<%{ShowPath()}\ %h%m%r%=%-14.(%l,%c%V%)\ %P
 
 	" 读取项目配置
-	silent execute 'source '.s:workspace
+	silent execute 'source' s:workspace
 endif
 
