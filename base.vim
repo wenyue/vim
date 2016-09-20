@@ -54,6 +54,8 @@ set so=5
 
 
 " -------------------------------------编辑配置---------------------------------
+filetype plugin indent on 
+
 " 智能tab
 set smarttab
 
@@ -64,6 +66,7 @@ set autoindent
 set tabstop=4
 set softtabstop=4
 set noexpandtab
+let g:python_recommended_style=0
 
 " 换行
 set shiftwidth=4
@@ -78,45 +81,48 @@ autocmd FileType lua,python,vim :call SaveAsUTF8()
 
 
 " -------------------------------------插件配置---------------------------------
-call plug#begin('$VIM/vimfiles/plugged')
-
+let g:plugged_path = '$VIM/vimfiles/plugged'
+call plug#begin(g:plugged_path)
 Plug 'wenyue/vim'
+
 " 文件查找
-Plug 'kien/ctrlp.vim' | Plug 'adonis0147/ctrlp-cIndexer'
+Plug 'kien/ctrlp.vim'
 Plug 'FelikZ/ctrlp-py-matcher'
+let g:ctrlp_match_window_reversed=0
+let g:ctrlp_max_files=0
+let g:ctrlp_max_height=20
+let g:ctrlp_working_path_mode='rw'
+let g:ctrlp_match_window='bottom,order:ttb,min:1,max:20,results:100'
+let g:ctrlp_match_func={ 'match': 'pymatcher#PyMatch' }
+
+" 全文搜索
+Plug 'dkprice/vim-easygrep'
+let g:EasyGrepCommand='ag'
+let g:EasyGrepInvertWholeWord=1
+let g:EasyGrepRecursive=1
+let g:EasyGrepIgnoreCase=0
+
 " 自动补全
-"Plug 'Valloric/YouCompleteMe', {'do': 'python install.py'}
+Plug 'Valloric/YouCompleteMe', {'do': 'python install.py'}
+set completeopt=longest,menu
+autocmd InsertLeave * if pumvisible() == 0|pclose|endif
+nnoremap <leader>d :YcmCompleter GoToDefinitionElseDeclaration<CR> " 跳转到定义处
+let g:ycm_complete_in_comments=1
+let g:ycm_complete_in_strings=1
+let g:ycm_seed_identifiers_with_syntax=1
+
 " 语法检测
 Plug 'kevinw/pyflakes-vim', {'for': 'python'}
+let g:pyflakes_use_quickfix=0
+
 " 主题
 Plug 'tomasr/molokai'
-
-call plug#end()
-
-" ctrlp settings
-let g:ctrlp_match_window_reversed = 0
-let g:ctrlp_max_files = 0
-let g:ctrlp_max_height = 20
-let g:ctrlp_working_path_mode = 'rw'
-let g:ctrlp_match_window = 'bottom,order:ttb,min:1,max:20,results:100'
-let g:ctrlp_match_func = { 'match': 'pymatcher#PyMatch' }
-
-" YouCompleteMe settings
-"set completeopt=longest,menu
-"autocmd InsertLeave * if pumvisible() == 0|pclose|endif
-"nnoremap <leader>d :YcmCompleter GoToDefinitionElseDeclaration<CR> " 跳转到定义处
-"let g:ycm_complete_in_comments = 1
-"let g:ycm_complete_in_strings = 1
-"let g:ycm_seed_identifiers_with_syntax = 1
-
-" pyflakes settings
-let g:pyflakes_use_quickfix = 0
-
-" molokai settings
-let g:rehash256 = 1
+let g:rehash256=1
 set background=dark
 set t_Co=256
-execute 'source $VIM/vimfiles/plugged/molokai/colors/molokai.vim'
+execute 'source '.g:plugged_path.'/molokai/colors/molokai.vim'
+
+call plug#end()
 
 
 " -------------------------------------项目配置---------------------------------

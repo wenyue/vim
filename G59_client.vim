@@ -1,7 +1,7 @@
 autocmd! bufwritepost G59_client.vim source %
 
 " 配置
-let s:script = g:dir.'script/'
+let s:script=g:dir.'script/'
 
 " 设置path
 function! SetPath()
@@ -16,6 +16,9 @@ function! CtrlP()
 endfunction
 map <silent> <leader>f :call CtrlP() <CR>
 
+" EasyGrep
+let g:EasyGrepRoot=s:script
+
 " 运行程序
 function! Exe(program)
 python << EOF
@@ -26,7 +29,7 @@ program = vim.eval('a:program')
 if program == 'game0':
 	if os.path.exists('Documents/user.info'):
 		os.remove('Documents/user.info')
-		subprocess.Popen(work_dir + 'gamemirror.exe')
+		subprocess.Popen(work_dir + 'gamemirror.exe', cwd = work_dir)
 elif program in ['game1', 'game2']:
 	game_num = int(program[4])
 	from win32api import GetSystemMetrics
@@ -37,7 +40,7 @@ elif program in ['game1', 'game2']:
 	# create game
 	for index in range(1, game_num + 1):
 		user_info = 'user%d.info' % index
-		subprocess.Popen([work_dir + 'gamemirror.exe', '--userinfo', user_info])
+		subprocess.Popen([work_dir + 'gamemirror.exe', '--userinfo', user_info], cwd = work_dir)
 
 	def getWindowSize(hwnd):
 		rect = win32gui.GetWindowRect(hwnd)
