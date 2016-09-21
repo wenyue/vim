@@ -121,6 +121,8 @@ let g:pyflakes_use_quickfix=0
 Plug 'tomasr/molokai'
 let s:molokai_path=g:plugged_path.'/molokai/colors/molokai.vim'
 if filereadable(s:molokai_path) && (!exists('g:colors_name') || g:colors_name!="molokai")
+	syntax enable
+	syntax on
 	let g:rehash256=1
 	set t_Co=256
 	execute 'source' s:molokai_path
@@ -153,7 +155,7 @@ function! ToUnixPath(path)
 endfunction
 
 let s:workspace = findfile('workspace.vim', '.;')
-if !empty(s:workspace)
+if !empty(s:workspace) && !exists('g:dir')
 	let g:dir = ToUnixPath(fnamemodify(s:workspace, ":p:h").'\')
 
 	" 显示状态行

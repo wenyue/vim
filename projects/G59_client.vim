@@ -117,6 +117,9 @@ function! Svn(command)
 	elseif a:command == 'ci'
 		" commit
 		silent execute '!start TortoiseProc /command:commit /path:'.s:script
+	elseif a:command == 'log'
+		" commit
+		silent execute '!start TortoiseProc /command:log /path:'.expand('%')
 	endif
 endfunction
 command! -nargs=1 Svn :call Svn('<args>')
