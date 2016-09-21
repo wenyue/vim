@@ -83,8 +83,8 @@ autocmd FileType lua,python,vim :call SaveAsUTF8()
 
 
 " -------------------------------------插件配置---------------------------------
-let g:plugged_path=expand('<sfile>:p:h:h')
-call plug#begin(g:plugged_path)
+let s:plugged_dir=expand('<sfile>:p:h:h').'/'
+call plug#begin(s:plugged_dir)
 Plug 'wenyue/vim'
 
 " 文件查找
@@ -103,6 +103,7 @@ let g:EasyGrepCommand='ag'
 let g:EasyGrepInvertWholeWord=1
 let g:EasyGrepRecursive=1
 let g:EasyGrepIgnoreCase=0
+let g:EasyGrepReplaceWindowMode=2
 
 " 自动补全
 Plug 'Valloric/YouCompleteMe', {'do': 'python install.py'}
@@ -119,7 +120,7 @@ let g:pyflakes_use_quickfix=0
 
 " 主题
 Plug 'tomasr/molokai'
-let s:molokai_path=g:plugged_path.'/molokai/colors/molokai.vim'
+let s:molokai_path=s:plugged_dir.'molokai/colors/molokai.vim'
 if filereadable(s:molokai_path) && (!exists('g:colors_name') || g:colors_name!="molokai")
 	syntax enable
 	syntax on
@@ -154,6 +155,11 @@ function! ToUnixPath(path)
 	return substitute(substitute(a:path, '\', '/', 'g'), ' ', '\\ ', 'g')
 endfunction
 
+" 读取项目配置
+function! LoadProjectConfig(project)
+	silent execute 'source' s:plugged_dir.'vim/projects/'.a:project.'.vim'
+endfunction
+
 let s:workspace = findfile('workspace.vim', '.;')
 if !empty(s:workspace) && !exists('g:dir')
 	let g:dir = ToUnixPath(fnamemodify(s:workspace, ":p:h").'\')
@@ -166,7 +172,6 @@ if !empty(s:workspace) && !exists('g:dir')
 	endfunction
 	set statusline=%<%{ShowPath()}\ %h%m%r%=%-14.(%l,%c%V%)\ %P
 
-	" 读取项目配置
 	silent execute 'source' s:workspace
 endif
 
