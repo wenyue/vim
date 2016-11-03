@@ -115,8 +115,7 @@ let g:ycm_complete_in_strings=1
 let g:ycm_seed_identifiers_with_syntax=1
 
 " 语法检测
-Plug 'kevinw/pyflakes-vim', {'for': 'python'}
-let g:pyflakes_use_quickfix=0
+Plug 'scrooloose/syntastic'
 
 " 主题
 Plug 'tomasr/molokai'
