@@ -40,7 +40,6 @@ set cpt=.,w,b
 " 不要发出bell声音
 set vb 
 
-
 " -------------------------------------界面配置---------------------------------
 " 显示行号
 set number
@@ -58,16 +57,12 @@ set so=5
 " -------------------------------------编辑配置---------------------------------
 filetype plugin indent on 
 
-" 智能tab
-set smarttab
-
-" 智能缩进
-set autoindent
-
 " tab长度
 set tabstop=4
 set softtabstop=4
+set smarttab
 set noexpandtab
+set autoindent
 let g:python_recommended_style=0
 
 " 换行
@@ -109,13 +104,35 @@ let g:EasyGrepReplaceWindowMode=2
 Plug 'Valloric/YouCompleteMe', {'do': 'python install.py'}
 set completeopt=longest,menu
 autocmd InsertLeave * if pumvisible() == 0|pclose|endif
-nnoremap <leader>d :YcmCompleter GoToDefinitionElseDeclaration<CR> " 跳转到定义处
+nnoremap <leader>d :YcmCompleter GoToDefinitionElseDeclaration<CR>
 let g:ycm_complete_in_comments=1
 let g:ycm_complete_in_strings=1
 let g:ycm_seed_identifiers_with_syntax=1
 
 " 语法检测
-Plug 'scrooloose/syntastic'
+Plug 'w0rp/ale', {'do': 'pip install flake8'}
+let g:ale_python_flake8_options='--ignore 
+			\W191,
+			\W391,
+			\E203,
+			\E226,
+			\E231,
+			\E262,
+			\E265,
+			\E266,
+			\E303,
+			\E401,
+			\E501'
+let g:ale_linters={
+			\	'python': ['flake8'],
+			\}
+
+" 快速注释
+Plug 'scrooloose/nerdcommenter'
+let g:NERDDefaultAlign='left'
+let g:NERDCreateDefaultMappings=0
+let g:NERDCommentEmptyLines=1
+map <silent> <leader>c <plug>NERDCommenterToggle
 
 " 主题
 Plug 'tomasr/molokai'
@@ -127,6 +144,32 @@ if filereadable(s:molokai_path) && (!exists('g:colors_name') || g:colors_name!="
 	set t_Co=256
 	execute 'source' s:molokai_path
 endif
+
+" 代码折叠
+Plug 'tmhedberg/SimpylFold'
+set foldmethod=indent
+set foldlevel=99
+nnoremap <space> za
+
+" 格式整理
+Plug 'google/yapf', {'do': 'python setup.py install'}
+function! Yapf() range
+	" Determine range to format.
+	let l:line_ranges = a:firstline . '-' . a:lastline
+	let l:cmd = 'yapf --lines=' . l:line_ranges . ' --style="' . s:plugged_dir . 'vim/wenyue_style.yapf"'
+
+	" Call YAPF with the current buffer
+	let l:formatted_text = system(l:cmd, join(getline(1, '$'), "\n") . "\n")
+
+	" Update the buffer.
+	execute '1,' . string(line('$')) . 'delete'
+	call setline(1, split(l:formatted_text, "\n"))
+
+	" Reset cursor to first line of the formatted range.
+	call cursor(a:firstline, 1)
+endfunction
+command! -range=% Yapf <line1>,<line2>call Yapf()
+map <silent> <leader>s :'<,'>call Yapf()<CR>
 
 call plug#end()
 
