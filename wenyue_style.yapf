@@ -1,0 +1,34 @@
+[style]
+# Indent width used for line continuations.
+continuation_indent_width=1
+
+# The number of columns to use for indentation.
+indent_width=1
+
+# Use the Tab character for indentation.
+use_tabs=True
+
+# The column limit.
+column_limit=79
+
+# If an argument / parameter list is going to be split, then split before
+# the first argument.
+split_before_first_argument=True
+
+# Put closing brackets on a separate line, dedented, if the bracketed
+# expression can't fit in a single line. Applies to all kinds of brackets,
+# including function definitions and calls. For example:
+#
+#   config = {
+#       'key1': 'value1',
+#       'key2': 'value2',
+#   }        # <--- this bracket is dedented and on a separate line
+#
+#   time_series = self.remote_client.query_entity_counters(
+#       entity='dev3246.region1',
+#       key='dns.query_latency_tcp',
+#       transform=Transformation.AVERAGE(window=timedelta(seconds=60)),
+#       start_ts=now()-timedelta(days=3),
+#       end_ts=now(),
+#   )        # <--- this bracket is dedented and on a separate line
+dedent_closing_brackets=True
