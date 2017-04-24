@@ -169,7 +169,7 @@ function! Yapf() range
 	call cursor(a:firstline, 1)
 endfunction
 command! -range=% Yapf <line1>,<line2>call Yapf()
-map <silent> <leader>s :'<,'>call Yapf()<CR>
+autocmd FileType python map <silent> <leader>q :'<,'>call Yapf()<CR>
 
 call plug#end()
 
