@@ -40,6 +40,7 @@ set cpt=.,w,b
 " 不要发出bell声音
 set vb 
 
+
 " -------------------------------------界面配置---------------------------------
 " 显示行号
 set number
@@ -76,6 +77,11 @@ function! SaveAsUTF8()
 endfunction
 autocmd FileType lua,python,vim :call SaveAsUTF8()
 
+" 代码折叠
+set foldmethod=indent
+set foldlevel=99
+nnoremap <space> za
+
 
 " -------------------------------------插件配置---------------------------------
 let s:plugged_dir=expand('<sfile>:p:h:h').'/'
@@ -91,6 +97,7 @@ let g:ctrlp_max_height=20
 let g:ctrlp_working_path_mode='rw'
 let g:ctrlp_match_window='bottom,order:ttb,min:1,max:20,results:100'
 let g:ctrlp_match_func={ 'match': 'pymatcher#PyMatch' }
+let g:ctrlp_clear_cache_on_exit = 1
 
 " 全文搜索
 Plug 'dkprice/vim-easygrep'
@@ -111,21 +118,10 @@ let g:ycm_seed_identifiers_with_syntax=1
 
 " 语法检测
 Plug 'w0rp/ale', {'do': 'pip install flake8'}
-let g:ale_python_flake8_options='--ignore 
-			\W191,
-			\W391,
-			\E203,
-			\E226,
-			\E231,
-			\E262,
-			\E265,
-			\E266,
-			\E303,
-			\E401,
-			\E501'
+let g:ale_python_flake8_options='--select F,E999'
 let g:ale_linters={
-			\	'python': ['flake8'],
-			\}
+\	'python': ['flake8'],
+\}
 
 " 快速注释
 Plug 'scrooloose/nerdcommenter'
@@ -145,12 +141,6 @@ if filereadable(s:molokai_path) && (!exists('g:colors_name') || g:colors_name!="
 	execute 'source' s:molokai_path
 endif
 
-" 代码折叠
-Plug 'tmhedberg/SimpylFold'
-set foldmethod=indent
-set foldlevel=99
-nnoremap <space> za
-
 " 格式整理
 Plug 'google/yapf', {'do': 'python setup.py install'}
 function! Yapf() range
@@ -169,7 +159,7 @@ function! Yapf() range
 	call cursor(a:firstline, 1)
 endfunction
 command! -range=% Yapf <line1>,<line2>call Yapf()
-autocmd FileType python map <silent> <leader>q :'<,'>call Yapf()<CR>
+autocmd FileType python map <silent> <leader>s :call Yapf()<CR>
 
 call plug#end()
 
