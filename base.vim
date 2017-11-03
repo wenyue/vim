@@ -83,6 +83,22 @@ set foldlevel=99
 nnoremap <space> za
 
 
+" -------------------------------------其它配置---------------------------------
+" 显示图片
+function! s:OpenPic(file)
+	silent execute '!' a:file
+	silent execute 'b #'
+	silent execute 'bd #'
+endfunction
+autocmd! bufenter *.jpg,*.png :call s:OpenPic(expand('<afile>'))
+
+" 打开文件所在目录
+function! OpenDir(filename)
+	silent execute '!start explorer /select,' a:filename
+endfunction
+nnoremap <silent> <leader>r :call OpenDir(expand('%')) <CR>
+
+
 " -------------------------------------插件配置---------------------------------
 let s:plugged_dir=expand('<sfile>:p:h:h').'/'
 call plug#begin(s:plugged_dir)
@@ -97,12 +113,13 @@ let g:ctrlp_max_height=20
 let g:ctrlp_working_path_mode='rw'
 let g:ctrlp_match_window='bottom,order:ttb,min:1,max:20,results:100'
 let g:ctrlp_match_func={ 'match': 'pymatcher#PyMatch' }
-let g:ctrlp_clear_cache_on_exit = 1
+let g:ctrlp_user_command='ag %s -l --nocolor -g ""'
+let g:ctrlp_use_caching=0
 
 " 全文搜索
-Plug 'dkprice/vim-easygrep'
-let g:EasyGrepCommand='ag'
-let g:EasyGrepInvertWholeWord=1
+Plug 'wenyue/vim-easygrep'
+set grepprg=ag\ --nogroup\ --nocolor
+let g:EasyGrepCommand=1
 let g:EasyGrepRecursive=1
 let g:EasyGrepIgnoreCase=0
 let g:EasyGrepReplaceWindowMode=2
@@ -165,20 +182,6 @@ call plug#end()
 
 
 " -------------------------------------项目配置---------------------------------
-" 显示图片
-function! s:OpenPic(file)
-	silent execute '!' a:file
-	silent execute 'b #'
-	silent execute 'bd #'
-endfunction
-autocmd! bufenter *.jpg,*.png :call s:OpenPic(expand('<afile>'))
-
-" 打开文件所在目录
-function! OpenDir(filename)
-	silent execute '!start explorer /select,' a:filename
-endfunction
-nnoremap <silent> <leader>r :call OpenDir(expand('%')) <CR>
-
 function! ToWinPath(path)
 	return substitute(substitute(a:path, '/', '\', 'g'), ' ', '\\ ', 'g')
 endfunction
@@ -187,7 +190,6 @@ function! ToUnixPath(path)
 	return substitute(substitute(a:path, '\', '/', 'g'), ' ', '\\ ', 'g')
 endfunction
 
-" 读取项目配置
 function! LoadProjectConfig(project)
 	silent execute 'source' s:plugged_dir.'vim/projects/'.a:project.'.vim'
 endfunction

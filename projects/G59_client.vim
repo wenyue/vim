@@ -26,68 +26,8 @@ import vim
 import subprocess
 work_dir = vim.eval('g:dir')
 program = vim.eval('a:program')
-if program == 'game0':
-	if os.path.exists('Documents/user.info'):
-		os.remove('Documents/user.info')
-		subprocess.Popen(work_dir + 'gamemirror.exe', cwd = work_dir)
-elif program in ['game1', 'game2']:
-	game_num = int(program[4])
-	from win32api import GetSystemMetrics
-	import win32gui, win32con, time
-	s_width = GetSystemMetrics(0)
-	s_height = GetSystemMetrics(1)
-
-	# create game
-	for index in range(1, game_num + 1):
-		user_info = 'user%d.info' % index
-		subprocess.Popen([work_dir + 'gamemirror.exe', '--userinfo', user_info], cwd = work_dir)
-
-	def getWindowSize(hwnd):
-		rect = win32gui.GetWindowRect(hwnd)
-		return rect[2] - rect[0], rect[3] - rect[1]
-
-	# set client position
-	def setClientPosition():
-		while True:
-			hwnd, hwnds = 0, []
-			for index in range(game_num):
-				hwnd = win32gui.FindWindowEx(0, hwnd, None, 'GameMirror')
-				if not hwnd:
-					break
-				hwnds.append(hwnd)
-			else:
-				break
-		width, height = getWindowSize(hwnd)
-		positionMap = [
-			(-width, (s_height-height)/2),
-			(0, (s_height-height)/2),
-		]
-
-		for index, hwnd in enumerate(hwnds):
-			x, y = positionMap[index]
-			win32gui.SetWindowPos(hwnd, 0, x, y, 0, 0, win32con.SWP_NOSIZE | win32con.SWP_NOZORDER)
-	setClientPosition()
-
-	# set cmd position
-	def setCmdPosition():
-		time.sleep(3)
-		hwnd, hwnds = 0, []
-		for index in range(game_num):
-			hwnd = win32gui.FindWindowEx(0, hwnd, None, 'Run-time Debug')
-			if not hwnd:
-				return
-			hwnds.append(hwnd)
-		width, height = getWindowSize(hwnd)
-		positionMap = [
-			(-s_width, 0),
-			(s_width-width, 0),
-		]
-
-		for index, hwnd in enumerate(hwnds):
-			x, y = positionMap[index]
-			win32gui.SetWindowPos(hwnd, 0, x, y, 0, 0, win32con.SWP_NOSIZE | win32con.SWP_NOZORDER)
-	setCmdPosition()
-
+if program == 'game':
+	subprocess.Popen(work_dir + 'gamemirror.exe', cwd=work_dir)
 elif program == 'model':
 	subprocess.Popen(['start', '/B', 'lib/modeleditor.exe.lnk'], shell=True)
 elif program == 'scene':
@@ -101,9 +41,7 @@ endfunction
 command! -nargs=1 Exe :call Exe('<args>')
 
 " 运行游戏
-map <silent> <F4> :call Exe('game0') <CR>
-map <silent> <F5> :call Exe('game1') <CR>
-map <silent> <F6> :call Exe('game2') <CR>
+map <silent> <F4> :call Exe('game') <CR>
 map <silent> <F9> :call Exe('model') <CR>
 map <silent> <F10> :call Exe('scene') <CR>
 map <silent> <F11> :call Exe('fx') <CR>
