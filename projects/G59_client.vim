@@ -41,7 +41,7 @@ endfunction
 command! -nargs=1 Exe :call Exe('<args>')
 
 " 运行游戏
-map <silent> <F4> :call Exe('game') <CR>
+map <silent> <F5> :call Exe('game') <CR>
 map <silent> <F9> :call Exe('model') <CR>
 map <silent> <F10> :call Exe('scene') <CR>
 map <silent> <F11> :call Exe('fx') <CR>

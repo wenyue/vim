@@ -82,21 +82,47 @@ set foldmethod=indent
 set foldlevel=99
 nnoremap <space> za
 
+" 快捷替换
+function! ReplaceCurWord()
+	let content=expand('<cword>')
+	call inputsave()
+	let asking='Replace "'.l:content.'" with: '
+	let new_content=input(l:asking)
+	call inputrestore()
+	if new_content != ''
+		execute '%s/\<'.l:content.'\>/'.l:new_content.'/g'
+	endif
+endfunction
+nnoremap <silent> <leader>r :call ReplaceCurWord()<CR>
+
+function! ReplaceCurSelection()
+	let content=GetVisualSelection()
+	call inputsave()
+	let asking='Replace "'.l:content.'" with: '
+	let new_content=input(l:asking)
+	call inputrestore()
+	if new_content != ''
+		let content=escape(l:content, '\\/.*$^~[]')
+		execute '%s/'.l:content.'/'.l:new_content.'/g'
+	endif
+endfunction
+vnoremap <silent> <leader>r :call ReplaceCurSelection()<CR>
+
 
 " -------------------------------------其它配置---------------------------------
 " 显示图片
-function! s:OpenPic(file)
+function! OpenPic(file)
 	silent execute '!' a:file
 	silent execute 'b #'
 	silent execute 'bd #'
 endfunction
-autocmd! bufenter *.jpg,*.png :call s:OpenPic(expand('<afile>'))
+autocmd! bufenter *.jpg,*.png :call OpenPic(expand('<afile>'))
 
 " 打开文件所在目录
 function! OpenDir(filename)
 	silent execute '!start explorer /select,' a:filename
 endfunction
-nnoremap <silent> <leader>r :call OpenDir(expand('%')) <CR>
+nnoremap <silent> <leader>w :call OpenDir(expand('%')) <CR>
 
 
 " -------------------------------------插件配置---------------------------------
@@ -159,7 +185,7 @@ if filereadable(s:molokai_path) && (!exists('g:colors_name') || g:colors_name!="
 endif
 
 " 格式整理
-Plug 'google/yapf', {'do': 'python setup.py install'}
+Plug 'wenyue/yapf', {'do': 'python setup.py install'}
 function! Yapf() range
 	" Determine range to format.
 	let l:line_ranges = a:firstline . '-' . a:lastline
@@ -182,6 +208,20 @@ call plug#end()
 
 
 " -------------------------------------项目配置---------------------------------
+" 获取选中内容
+function! GetVisualSelection()
+    " Why is this not a built-in Vim script function?!
+    let [line_start, column_start] = getpos("'<")[1:2]
+    let [line_end, column_end] = getpos("'>")[1:2]
+    let lines = getline(line_start, line_end)
+    if len(lines) == 0
+        return ''
+    endif
+    let lines[-1] = lines[-1][: column_end - (&selection == 'inclusive' ? 1 : 2)]
+    let lines[0] = lines[0][column_start - 1:]
+    return join(lines, "\n")
+endfunction
+
 function! ToWinPath(path)
 	return substitute(substitute(a:path, '/', '\', 'g'), ' ', '\\ ', 'g')
 endfunction
