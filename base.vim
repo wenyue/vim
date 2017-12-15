@@ -139,8 +139,9 @@ let g:ctrlp_max_height=20
 let g:ctrlp_working_path_mode='rw'
 let g:ctrlp_match_window='bottom,order:ttb,min:1,max:20,results:100'
 let g:ctrlp_match_func={ 'match': 'pymatcher#PyMatch' }
-let g:ctrlp_user_command='ag %s -l --nocolor -g ""'
 let g:ctrlp_use_caching=0
+let g:ctrlp_user_command='ag %s -l --nocolor -g ""'
+let g:ctrlp_user_command.=' --ignore="*.pyo"'
 
 " 全文搜索
 Plug 'wenyue/vim-easygrep'
@@ -149,9 +150,11 @@ let g:EasyGrepCommand=1
 let g:EasyGrepRecursive=1
 let g:EasyGrepIgnoreCase=0
 let g:EasyGrepReplaceWindowMode=2
+let g:EasyGrepFilesToExclude='.svn,.git'
+let g:EasyGrepInvertWholeWord=1
 
 " 自动补全
-Plug 'Valloric/YouCompleteMe', {'do': 'python install.py'}
+Plug 'Valloric/YouCompleteMe', {'do': 'python install.py --msvc 14'}
 set completeopt=longest,menu
 autocmd InsertLeave * if pumvisible() == 0|pclose|endif
 nnoremap <leader>d :YcmCompleter GoToDefinitionElseDeclaration<CR>
