@@ -128,7 +128,6 @@ nnoremap <silent> <leader>w :call OpenDir(expand('%')) <CR>
 " -------------------------------------插件配置---------------------------------
 let s:plugged_dir=expand('<sfile>:p:h:h').'/'
 call plug#begin(s:plugged_dir)
-Plug 'wenyue/vim'
 
 " 文件查找
 Plug 'kien/ctrlp.vim'
@@ -239,16 +238,35 @@ endfunction
 
 let s:workspace = findfile('workspace.vim', '.;')
 if !empty(s:workspace) && !exists('g:dir')
-	let g:dir = ToUnixPath(fnamemodify(s:workspace, ":p:h").'\')
+	let g:root_path = ToUnixPath(fnamemodify(s:workspace, ":p:h").'\')
+	let g:work_path = g:root_path
+
+	" 导入配置
+	silent execute 'source' s:workspace
 
 	" 显示状态行
 	set laststatus=2
 	function! ShowPath()
 		let filename = ToUnixPath(expand('%:p'))
-		return substitute(l:filename, g:dir, '', 'g')
+		return substitute(l:filename, g:work_path, '', 'g')
 	endfunction
 	set statusline=%<%{ShowPath()}\ %h%m%r%=%-14.(%l,%c%V%)\ %P
 
-	silent execute 'source' s:workspace
+	" 设置path
+	function! SetPath()
+		set path=.
+		silent execute 'set path+='.g:work_path.'**'
+	endfunction
+	call SetPath()
+
+	" CtrlP
+	function! CtrlP()
+		silent execute 'CtrlP '.g:work_path
+	endfunction
+	map <silent> <leader>f :call CtrlP() <CR>
+
+	" EasyGrep
+	let g:EasyGrepRoot=g:work_path
+
 endif
 
