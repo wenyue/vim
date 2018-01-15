@@ -1,7 +1,10 @@
 autocmd! bufwritepost G55_client.vim source %
 
 " 配置
-let s:script=g:dir.'Package/Script/Python'
+let s:script=g:dir.'Python/'
+
+" 配置虚拟环境
+let g:ycm_python_binary_path = g:dir.'python/Scripts/python.exe'
 
 " 设置path
 function! SetPath()
@@ -26,8 +29,9 @@ import vim
 import subprocess
 work_dir = vim.eval('g:dir')
 program = vim.eval('a:program')
+root_dir = work_dir + '../../'
 if program == 'game':
-	subprocess.Popen(work_dir + 'Messiah_TXM.bat', cwd=work_dir)
+	subprocess.Popen(root_dir + 'Messiah_TXM.bat', cwd=root_dir)
 EOF
 endfunction
 command! -nargs=1 Exe :call Exe('<args>')

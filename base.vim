@@ -1,5 +1,13 @@
-autocmd! bufwritepost base.vim source %
+"autocmd! bufwritepost base.vim source %
 " -------------------------------------基础配置---------------------------------
+if !exists("g:os")
+    if has("win64") || has("win32") || has("win16")
+        let g:os = "Windows"
+    else
+        let g:os = substitute(system('uname'), '\n', '', '')
+    endif
+endif
+
 " 不兼容vi
 set nocompatible
 
@@ -26,10 +34,31 @@ set hidden
 
 " 内部编码
 set encoding=UTF-8
+set termencoding=UTF-8
 set langmenu=zh_CN.UTF-8
 language message zh_CN.UTF-8
 source $VIMRUNTIME/delmenu.vim
 source $VIMRUNTIME/menu.vim
+if g:os == 'Windows'
+	function! QfMakeConv()
+		let qflist = getqflist()
+		for i in qflist
+			let i.text = iconv(i.text, "cp936", "utf-8")
+		endfor
+		call setqflist(qflist)
+	endfunction
+	autocmd QuickFixCmdPost * call QfMakeConv()
+endif
+
+" 启动最大化
+if g:os == 'Windows'
+    autocmd GUIEnter * simalt ~x
+else
+	function! MaximizeWindow()
+		silent !wmctrl -r :ACTIVE: -b add,maximized_vert,maximized_horz
+	endfunction
+    autocmd GUIEnter * call MaximizeWindow()
+endif
 
 " 设置<leader>
 let mapleader=','
@@ -54,6 +83,17 @@ set hlsearch
 " 上下文行数
 set so=5
 
+" 去除toolbar
+set guioptions-=T
+
+" 折行设置
+set wrap
+set showbreak=->\ 
+nnoremap j gj
+nnoremap k gk
+nnoremap ^ g^
+nnoremap $ g$
+
 
 " -------------------------------------编辑配置---------------------------------
 filetype plugin indent on 
@@ -75,7 +115,7 @@ function! SaveAsUTF8()
 	set fileencoding=UTF-8
 	set nobomb
 endfunction
-autocmd FileType lua,python,vim :call SaveAsUTF8()
+autocmd FileType lua,python,vim call SaveAsUTF8()
 
 " 代码折叠
 set foldmethod=indent
@@ -116,7 +156,7 @@ function! OpenPic(file)
 	silent execute 'b #'
 	silent execute 'bd #'
 endfunction
-autocmd! bufenter *.jpg,*.png :call OpenPic(expand('<afile>'))
+autocmd bufenter *.jpg,*.png call OpenPic(expand('<afile>'))
 
 " 打开文件所在目录
 function! OpenDir(filename)
@@ -142,6 +182,7 @@ let g:ctrlp_match_func={ 'match': 'pymatcher#PyMatch' }
 let g:ctrlp_use_caching=0
 let g:ctrlp_user_command='ag %s -l --nocolor -g ""'
 let g:ctrlp_user_command.=' --ignore="*.pyo"'
+let g:ctrlp_user_command.=' --ignore="*.pyc"'
 
 " 全文搜索
 Plug 'wenyue/vim-easygrep'
@@ -150,8 +191,9 @@ let g:EasyGrepCommand=1
 let g:EasyGrepRecursive=1
 let g:EasyGrepIgnoreCase=0
 let g:EasyGrepReplaceWindowMode=2
+let g:EasyGrep=2
+let g:EasyGrepJumpToMatch=0
 let g:EasyGrepFilesToExclude='.svn,.git'
-let g:EasyGrepInvertWholeWord=1
 
 " 自动补全
 Plug 'Valloric/YouCompleteMe', {'do': 'python install.py --msvc 14'}
@@ -164,10 +206,11 @@ let g:ycm_seed_identifiers_with_syntax=1
 
 " 语法检测
 Plug 'w0rp/ale', {'do': 'pip install flake8'}
-let g:ale_python_flake8_options='--select F,E999'
+let g:ale_python_flake8_options="--max-complexity 10 --max-line-length 160 --ignore=W191,E101,E128"
 let g:ale_linters={
 \	'python': ['flake8'],
 \}
+
 
 " 快速注释
 Plug 'scrooloose/nerdcommenter'

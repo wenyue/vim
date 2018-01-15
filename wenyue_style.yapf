@@ -5,3 +5,5 @@ BASED_ON_STYLE = google
 USE_TABS = True
 
 TAB_WIDTH = 4
+
+COLUMN_LIMIT = 90
