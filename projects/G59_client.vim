@@ -1,23 +1,7 @@
 autocmd! bufwritepost G59_client.vim source %
 
 " 配置
-let s:script=g:dir.'script/'
-
-" 设置path
-function! SetPath()
-	set path=.
-	silent execute 'set path+='.s:script.'**'
-endfunction
-call SetPath()
-
-" CtrlP
-function! CtrlP()
-	silent execute 'CtrlP '.s:script
-endfunction
-map <silent> <leader>f :call CtrlP() <CR>
-
-" EasyGrep
-let g:EasyGrepRoot=s:script
+let g:work_path=g:root_path.'script'
 
 " 运行程序
 function! Exe(program)
@@ -54,7 +38,7 @@ function! Svn(command)
 		silent execute '!start TortoiseProc /command:update /path:'.g:dir
 	elseif a:command == 'ci'
 		" commit
-		silent execute '!start TortoiseProc /command:commit /path:'.s:script
+		silent execute '!start TortoiseProc /command:commit /path:'.g:work_path
 	elseif a:command == 'log'
 		" commit
 		silent execute '!start TortoiseProc /command:log /path:'.expand('%')
