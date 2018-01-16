@@ -61,7 +61,7 @@ else
 endif
 
 " 设置<leader>
-let mapleader=','
+let mapleader = ','
 
 " 设置补全顺序
 set cpt=.,w,b
@@ -104,7 +104,7 @@ set softtabstop=4
 set smarttab
 set noexpandtab
 set autoindent
-let g:python_recommended_style=0
+let g:python_recommended_style = 0
 
 " 换行
 set shiftwidth=4
@@ -123,11 +123,24 @@ set foldlevel=99
 nnoremap <space> za
 
 " 快捷替换
+function! GetVisualSelection()
+    " Why is this not a built-in Vim script function?!
+    let [line_start, column_start] = getpos("'<")[1:2]
+    let [line_end, column_end] = getpos("'>")[1:2]
+    let lines = getline(line_start, line_end)
+    if len(lines) == 0
+        return ''
+    endif
+    let lines[-1] = lines[-1][: column_end - (&selection == 'inclusive' ? 1 : 2)]
+    let lines[0] = lines[0][column_start - 1:]
+    return join(lines, "\n")
+endfunction
+
 function! ReplaceCurWord()
-	let content=expand('<cword>')
+	let content = expand('<cword>')
 	call inputsave()
-	let asking='Replace "'.l:content.'" with: '
-	let new_content=input(l:asking)
+	let asking = 'Replace "'.l:content.'" with: '
+	let new_content = input(l:asking)
 	call inputrestore()
 	if new_content != ''
 		execute '%s/\<'.l:content.'\>/'.l:new_content.'/g'
@@ -136,13 +149,13 @@ endfunction
 nnoremap <silent> <leader>r :call ReplaceCurWord()<CR>
 
 function! ReplaceCurSelection()
-	let content=GetVisualSelection()
+	let content = GetVisualSelection()
 	call inputsave()
-	let asking='Replace "'.l:content.'" with: '
-	let new_content=input(l:asking)
+	let asking = 'Replace "'.l:content.'" with: '
+	let new_content = input(l:asking)
 	call inputrestore()
 	if new_content != ''
-		let content=escape(l:content, '\\/.*$^~[]')
+		let content = escape(l:content, '\\/.*$^~[]')
 		execute '%s/'.l:content.'/'.l:new_content.'/g'
 	endif
 endfunction
@@ -166,65 +179,64 @@ nnoremap <silent> <leader>w :call OpenDir(expand('%')) <CR>
 
 
 " -------------------------------------插件配置---------------------------------
-let s:plugged_dir=expand('<sfile>:p:h:h').'/'
+let s:plugged_dir = expand('<sfile>:p:h:h').'/'
 call plug#begin(s:plugged_dir)
 
 " 文件查找
 Plug 'kien/ctrlp.vim'
 Plug 'FelikZ/ctrlp-py-matcher'
-let g:ctrlp_match_window_reversed=0
-let g:ctrlp_max_files=0
-let g:ctrlp_max_height=20
-let g:ctrlp_working_path_mode='rw'
-let g:ctrlp_match_window='bottom,order:ttb,min:1,max:20,results:100'
-let g:ctrlp_match_func={ 'match': 'pymatcher#PyMatch' }
-let g:ctrlp_use_caching=0
-let g:ctrlp_user_command='ag %s -l --nocolor -g ""'
-let g:ctrlp_user_command.=' --ignore="*.pyo"'
-let g:ctrlp_user_command.=' --ignore="*.pyc"'
+let g:ctrlp_match_window_reversed  =  0
+let g:ctrlp_max_files = 0
+let g:ctrlp_max_height = 20
+let g:ctrlp_working_path_mode = 'rw'
+let g:ctrlp_match_window = 'bottom,order:ttb,min:1,max:20,results:100'
+let g:ctrlp_match_func = { 'match': 'pymatcher#PyMatch' }
+let g:ctrlp_use_caching = 0
+let g:ctrlp_user_command = 'ag %s -l --nocolor -g ""'
+let g:ctrlp_user_command .= ' --ignore="*.pyo"'
+let g:ctrlp_user_command .= ' --ignore="*.pyc"'
 
 " 全文搜索
 Plug 'wenyue/vim-easygrep'
 set grepprg=ag\ --nogroup\ --nocolor
-let g:EasyGrepCommand=1
-let g:EasyGrepRecursive=1
-let g:EasyGrepIgnoreCase=0
-let g:EasyGrepReplaceWindowMode=2
-let g:EasyGrep=2
-let g:EasyGrepJumpToMatch=0
-let g:EasyGrepFilesToExclude='.svn,.git'
+let g:EasyGrepCommand = 1
+let g:EasyGrepRecursive = 1
+let g:EasyGrepIgnoreCase = 0
+let g:EasyGrepReplaceWindowMode = 2
+let g:EasyGrep = 2
+let g:EasyGrepJumpToMatch = 0
+let g:EasyGrepFilesToExclude = '.svn,.git'
 
 " 自动补全
 Plug 'Valloric/YouCompleteMe', {'do': 'python install.py --msvc 14'}
 set completeopt=longest,menu
 autocmd InsertLeave * if pumvisible() == 0|pclose|endif
 nnoremap <leader>d :YcmCompleter GoToDefinitionElseDeclaration<CR>
-let g:ycm_complete_in_comments=1
-let g:ycm_complete_in_strings=1
-let g:ycm_seed_identifiers_with_syntax=1
+let g:ycm_complete_in_comments = 1
+let g:ycm_complete_in_strings = 1
+let g:ycm_seed_identifiers_with_syntax = 1
 
 " 语法检测
 Plug 'w0rp/ale', {'do': 'pip install flake8'}
-let g:ale_python_flake8_options="--max-complexity 10 --max-line-length 160 --ignore=W191,E101,E128"
-let g:ale_linters={
+let g:ale_python_flake8_options = '--config="'.s:plugged_dir.'vim/.flake8"'
+let g:ale_linters = {
 \	'python': ['flake8'],
 \}
 
-
 " 快速注释
 Plug 'scrooloose/nerdcommenter'
-let g:NERDDefaultAlign='left'
-let g:NERDCreateDefaultMappings=0
-let g:NERDCommentEmptyLines=1
+let g:NERDDefaultAlign = 'left'
+let g:NERDCreateDefaultMappings = 0
+let g:NERDCommentEmptyLines = 1
 map <silent> <leader>c <plug>NERDCommenterToggle
 
 " 主题
 Plug 'tomasr/molokai'
-let s:molokai_path=s:plugged_dir.'molokai/colors/molokai.vim'
-if filereadable(s:molokai_path) && (!exists('g:colors_name') || g:colors_name!="molokai")
+let s:molokai_path = s:plugged_dir.'molokai/colors/molokai.vim'
+if filereadable(s:molokai_path) && (!exists('g:colors_name') || g:colors_name != "molokai")
 	syntax enable
 	syntax on
-	let g:rehash256=1
+	let g:rehash256 = 1
 	set t_Co=256
 	execute 'source' s:molokai_path
 endif
@@ -233,14 +245,14 @@ endif
 Plug 'wenyue/yapf', {'do': 'python setup.py install'}
 function! Yapf() range
 	" Determine range to format.
-	let l:line_ranges = a:firstline . '-' . a:lastline
-	let l:cmd = 'yapf --lines=' . l:line_ranges . ' --style="' . s:plugged_dir . 'vim/wenyue_style.yapf"'
+	let l:line_ranges = a:firstline.'-'.a:lastline
+	let l:cmd = 'yapf --lines='.l:line_ranges.' --style="'.s:plugged_dir.'vim/.style.yapf"'
 
 	" Call YAPF with the current buffer
-	let l:formatted_text = system(l:cmd, join(getline(1, '$'), "\n") . "\n")
+	let l:formatted_text = system(l:cmd, join(getline(1, '$'), "\n")."\n")
 
 	" Update the buffer.
-	execute '1,' . string(line('$')) . 'delete'
+	execute '1,'.string(line('$')).'delete'
 	call setline(1, split(l:formatted_text, "\n"))
 
 	" Reset cursor to first line of the formatted range.
@@ -253,20 +265,6 @@ call plug#end()
 
 
 " -------------------------------------项目配置---------------------------------
-" 获取选中内容
-function! GetVisualSelection()
-    " Why is this not a built-in Vim script function?!
-    let [line_start, column_start] = getpos("'<")[1:2]
-    let [line_end, column_end] = getpos("'>")[1:2]
-    let lines = getline(line_start, line_end)
-    if len(lines) == 0
-        return ''
-    endif
-    let lines[-1] = lines[-1][: column_end - (&selection == 'inclusive' ? 1 : 2)]
-    let lines[0] = lines[0][column_start - 1:]
-    return join(lines, "\n")
-endfunction
-
 function! ToWinPath(path)
 	return substitute(substitute(a:path, '/', '\', 'g'), ' ', '\\ ', 'g')
 endfunction
@@ -280,36 +278,14 @@ function! LoadProjectConfig(project)
 endfunction
 
 let s:workspace = findfile('workspace.vim', '.;')
-if !empty(s:workspace) && !exists('g:dir')
+if !empty(s:workspace) && !exists('g:root_path')
 	let g:root_path = ToUnixPath(fnamemodify(s:workspace, ":p:h").'\')
 	let g:work_path = g:root_path
 
-	" 导入配置
+	" 导入项目配置
 	silent execute 'source' s:workspace
 
-	" 显示状态行
-	set laststatus=2
-	function! ShowPath()
-		let filename = ToUnixPath(expand('%:p'))
-		return substitute(l:filename, g:work_path, '', 'g')
-	endfunction
-	set statusline=%<%{ShowPath()}\ %h%m%r%=%-14.(%l,%c%V%)\ %P
-
-	" 设置path
-	function! SetPath()
-		set path=.
-		silent execute 'set path+='.g:work_path.'**'
-	endfunction
-	call SetPath()
-
-	" CtrlP
-	function! CtrlP()
-		silent execute 'CtrlP '.g:work_path
-	endfunction
-	map <silent> <leader>f :call CtrlP() <CR>
-
-	" EasyGrep
-	let g:EasyGrepRoot=g:work_path
-
+	" 导入公共配置
+	call LoadProjectConfig('common')
 endif
 
