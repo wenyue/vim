@@ -3,6 +3,7 @@ autocmd! bufwritepost *.vim source %
 if !exists("g:os")
     if has("win64") || has("win32") || has("win16")
         let g:os = "Windows"
+		behave mswin
     else
         let g:os = substitute(system('uname'), '\n', '', '')
     endif
@@ -144,7 +145,6 @@ set backspace=indent,eol,start whichwrap+=<,>,[,]
 " 拷贝
 map <C-v> "+gP
 vn <C-c> "+y
-no p "0p
 exe 'inoremap <script> <C-v>' paste#paste_cmd['i']
 
 " tab长度
