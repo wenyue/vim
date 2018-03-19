@@ -1,5 +1,3 @@
-autocmd! bufwritepost common.vim source %
-
 " 显示状态行
 set laststatus=2
 function! ShowPath()

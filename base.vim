@@ -1,4 +1,4 @@
-autocmd! bufwritepost base.vim source %
+autocmd! bufwritepost *.vim source %
 " -------------------------------------基础配置---------------------------------
 if !exists("g:os")
     if has("win64") || has("win32") || has("win16")
@@ -45,7 +45,7 @@ if g:os == 'Windows'
 		for i in qflist
 			let i.text = iconv(i.text, "cp936", "utf-8")
 		endfor
-		silent call setqflist(qflist)
+		call setqflist(qflist)
 	endfunction
 	autocmd QuickFixCmdPost * call QfMakeConv()
 endif
@@ -78,7 +78,7 @@ set ruler
 
 " 搜索高亮
 set hlsearch
-nnoremap <C-n> :nohl<CR>
+nn <C-n> :nohl<CR>
 
 " 上下文行数
 set so=5
@@ -90,10 +90,10 @@ set guioptions-=m
 " 折行设置
 set wrap
 set showbreak=->\ 
-nnoremap j gj
-nnoremap k gk
-nnoremap ^ g^
-nnoremap $ g$
+nn j gj
+nn k gk
+nn ^ g^
+nn $ g$
 
 " 标签名字
 function! NeatBuffer(bufnr, fullname)
@@ -160,28 +160,28 @@ autocmd FileType lua,python,vim call SaveAsUTF8()
 " 代码折叠
 set foldmethod=indent
 set foldlevel=99
-nnoremap <space> za
+nn <space> za
 
 " 标签快捷键
-:nn <M-1> 1gt
-:nn <M-2> 2gt
-:nn <M-3> 3gt
-:nn <M-4> 4gt
-:nn <M-5> 5gt
-:nn <M-6> 6gt
-:nn <M-7> 7gt
-:nn <M-8> 8gt
-:nn <M-9> 9gt
-:nn <M-n> :tabnext<CR>
-:nn <M-p> :tabprevious<CR>
-:nn <M-e> :tabedit<CR>
-:nn <M-q> :tabclose<CR>
+nn <M-1> 1gt
+nn <M-2> 2gt
+nn <M-3> 3gt
+nn <M-4> 4gt
+nn <M-5> 5gt
+nn <M-6> 6gt
+nn <M-7> 7gt
+nn <M-8> 8gt
+nn <M-9> 9gt
+nn <silent> <M-n> :tabnext<CR>
+nn <silent> <M-p> :tabprevious<CR>
+nn <silent> <M-e> :tabedit<CR>
+nn <silent> <M-q> :tabclose<CR>
 
 " Window快捷键
-:nn <M-h> <C-w>h
-:nn <M-j> <C-w>j
-:nn <M-k> <C-w>k
-:nn <M-l> <C-w>l
+nn <M-h> <C-w>h
+nn <M-j> <C-w>j
+nn <M-k> <C-w>k
+nn <M-l> <C-w>l
 
 " 快捷替换
 function! GetVisualSelection()
@@ -202,23 +202,23 @@ function! ReplaceCurWord()
 	call inputsave()
 	let new_content = input('Replace as: ', l:content)
 	call inputrestore()
-	if new_content != content
+	if new_content != content && new_content != ''
 		execute '%s/\<'.l:content.'\>/'.l:new_content.'/g|norm!``'
 	endif
 endfunction
-nnoremap <silent> <leader>r :call ReplaceCurWord()<CR>
+nn <leader>r :call ReplaceCurWord()<CR>
 
 function! ReplaceCurSelection()
 	let content = GetVisualSelection()
 	call inputsave()
 	let new_content = input('Replace as: ', l:content)
 	call inputrestore()
-	if new_content != content
+	if new_content != content && new_content != ''
 		let content = escape(l:content, '\\/.*$^~[]')
 		execute '%s/'.l:content.'/'.l:new_content.'/g|norm!``'
 	endif
 endfunction
-vnoremap <silent> <leader>r :call ReplaceCurSelection()<CR>
+vn <leader>r :call ReplaceCurSelection()<CR>
 
 
 " -------------------------------------其它配置---------------------------------
@@ -228,13 +228,13 @@ function! OpenPic(file)
 	silent execute 'b #'
 	silent execute 'bd #'
 endfunction
-autocmd bufenter *.jpg,*.png call OpenPic(expand('<afile>'))
+autocmd bufenter *.jpg,*.png silent call OpenPic(expand('<afile>'))
 
 " 打开文件所在目录
 function! OpenDir(filename)
 	silent execute '!start explorer /select,' a:filename
 endfunction
-nnoremap <silent> <leader>w :call OpenDir(expand('%')) <CR>
+nn <silent> <leader>w :call OpenDir(expand('%')) <CR>
 
 
 " -------------------------------------插件配置---------------------------------
@@ -268,9 +268,9 @@ let g:EasyGrepFilesToExclude = '.svn,.git'
 
 " 自动补全
 Plug 'Valloric/YouCompleteMe', {'do': 'python install.py --msvc 14'}
-set completeopt=longest,menu
+set completeopt=menuone,preview
 autocmd InsertLeave * if pumvisible() == 0|pclose|endif
-nnoremap <leader>d :YcmCompleter GoToDefinitionElseDeclaration<CR>
+nn <leader>d :YcmCompleter GoToDefinitionElseDeclaration<CR>
 let g:ycm_complete_in_comments = 1
 let g:ycm_complete_in_strings = 1
 let g:ycm_seed_identifiers_with_syntax = 1
@@ -333,7 +333,7 @@ function! ToUnixPath(path)
 endfunction
 
 function! LoadProjectConfig(project)
-	silent execute 'source' s:plugged_dir.'vim/projects/'.a:project.'.vim'
+	execute 'source' s:plugged_dir.'vim/projects/'.a:project.'.vim'
 endfunction
 
 let s:workspace = findfile('workspace.vim', '.;')
@@ -342,9 +342,8 @@ if !empty(s:workspace) && !exists('g:root_path')
 	let g:work_path = g:root_path
 
 	" 导入项目配置
-	silent execute 'source' s:workspace
+	execute 'source' s:workspace
 
 	" 导入公共配置
 	call LoadProjectConfig('common')
 endif
-

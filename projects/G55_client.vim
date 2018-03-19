@@ -1,5 +1,3 @@
-autocmd! bufwritepost G55_client.vim source %
-
 " 配置工作目录
 let g:work_path = g:root_path.'Python/'
 
