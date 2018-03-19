@@ -15,9 +15,17 @@ set nocompatible
 " 自动读取变更
 set autoread
 
+" 配置leader键
+let mapleader = ','
+
 " 忽略大小写
 set ignorecase
 set smartcase
+
+" 搜索配置
+set hlsearch
+set incsearch
+nn <C-n> :nohl<CR>
 
 " 使用鼠标
 set mouse=a
@@ -61,13 +69,11 @@ else
     autocmd GUIEnter * call MaximizeWindow()
 endif
 
-let mapleader = ','
-
 " 设置补全顺序
 set cpt=.,w,b
 
 " 不要发出bell声音
-set vb 
+set vb
 
 
 " -------------------------------------界面配置---------------------------------
@@ -76,10 +82,6 @@ set number
 
 " 显示当前位置
 set ruler
-
-" 搜索高亮
-set hlsearch
-nn <C-n> :nohl<CR>
 
 " 上下文行数
 set so=5
@@ -183,7 +185,7 @@ nn <M-8> 8gt
 nn <M-9> 9gt
 nn <silent> <M-n> :tabnext<CR>
 nn <silent> <M-p> :tabprevious<CR>
-nn <silent> <M-e> :tabedit<CR>
+nn <silent> <M-e> :tabedit %<CR>
 nn <silent> <M-q> :tabclose<CR>
 
 " Window快捷键
@@ -263,6 +265,10 @@ let g:ctrlp_use_caching = 0
 let g:ctrlp_user_command = 'ag %s -l --nocolor -g ""'
 let g:ctrlp_user_command .= ' --ignore="*.pyo"'
 let g:ctrlp_user_command .= ' --ignore="*.pyc"'
+let g:ctrlp_prompt_mappings = {
+	\ 'AcceptSelection("e")': [],
+	\ 'AcceptSelection("r")': ['<cr>', '<2-LeftMouse>'],
+	\ }
 
 " 全文搜索
 Plug 'wenyue/vim-easygrep'
