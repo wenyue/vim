@@ -1,10 +1,10 @@
 autocmd! bufwritepost G55_client.vim source %
 
 " 配置工作目录
-let g:work_path=g:root_path.'Python'
+let g:work_path = g:root_path.'Python/'
 
 " 配置虚拟环境
-let g:ycm_python_binary_path = g:dir.'python/Scripts/python.exe'
+let g:ycm_python_binary_path = g:root_path.'VimPython/Scripts/python.exe'
 
 " 运行程序
 function! Exe(program)

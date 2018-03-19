@@ -1,4 +1,4 @@
-"autocmd! bufwritepost base.vim source %
+autocmd! bufwritepost base.vim source %
 " -------------------------------------基础配置---------------------------------
 if !exists("g:os")
     if has("win64") || has("win32") || has("win16")
@@ -45,7 +45,7 @@ if g:os == 'Windows'
 		for i in qflist
 			let i.text = iconv(i.text, "cp936", "utf-8")
 		endfor
-		call setqflist(qflist)
+		silent call setqflist(qflist)
 	endfunction
 	autocmd QuickFixCmdPost * call QfMakeConv()
 endif
@@ -60,7 +60,6 @@ else
     autocmd GUIEnter * call MaximizeWindow()
 endif
 
-" 设置<leader>
 let mapleader = ','
 
 " 设置补全顺序
@@ -79,12 +78,14 @@ set ruler
 
 " 搜索高亮
 set hlsearch
+nnoremap <C-n> :nohl<CR>
 
 " 上下文行数
 set so=5
 
 " 去除toolbar
 set guioptions-=T
+set guioptions-=m
 
 " 折行设置
 set wrap
@@ -93,6 +94,45 @@ nnoremap j gj
 nnoremap k gk
 nnoremap ^ g^
 nnoremap $ g$
+
+" 标签名字
+function! NeatBuffer(bufnr, fullname)
+    let l:name = bufname(a:bufnr)
+    if getbufvar(a:bufnr, '&modifiable')
+        if l:name == ''
+            return '[No Name]'
+        else
+            if a:fullname 
+                return fnamemodify(l:name, ':p')
+            else
+                return fnamemodify(l:name, ':t')
+            endif
+        endif
+    else
+        let l:buftype = getbufvar(a:bufnr, '&buftype')
+        if l:buftype == 'quickfix'
+            return '[Quickfix]'
+        elseif l:name != ''
+            if a:fullname 
+                return '-'.fnamemodify(l:name, ':p')
+            else
+                return '-'.fnamemodify(l:name, ':t')
+            endif
+        else
+        endif
+        return '[No Name]'
+    endif
+endfunc
+
+function! NeatGuiTabLabel()
+    let l:num = v:lnum
+    let l:buflist = tabpagebuflist(l:num)
+    let l:winnr = tabpagewinnr(l:num)
+    let l:bufnr = l:buflist[l:winnr - 1]
+    return l:num.': '.NeatBuffer(l:bufnr, 0)
+endfunc
+
+set guitablabel=%{NeatGuiTabLabel()}
 
 
 " -------------------------------------编辑配置---------------------------------
@@ -122,6 +162,27 @@ set foldmethod=indent
 set foldlevel=99
 nnoremap <space> za
 
+" 标签快捷键
+:nn <M-1> 1gt
+:nn <M-2> 2gt
+:nn <M-3> 3gt
+:nn <M-4> 4gt
+:nn <M-5> 5gt
+:nn <M-6> 6gt
+:nn <M-7> 7gt
+:nn <M-8> 8gt
+:nn <M-9> 9gt
+:nn <M-n> :tabnext<CR>
+:nn <M-p> :tabprevious<CR>
+:nn <M-e> :tabedit<CR>
+:nn <M-q> :tabclose<CR>
+
+" Window快捷键
+:nn <M-h> <C-w>h
+:nn <M-j> <C-w>j
+:nn <M-k> <C-w>k
+:nn <M-l> <C-w>l
+
 " 快捷替换
 function! GetVisualSelection()
     " Why is this not a built-in Vim script function?!
@@ -139,11 +200,10 @@ endfunction
 function! ReplaceCurWord()
 	let content = expand('<cword>')
 	call inputsave()
-	let asking = 'Replace "'.l:content.'" with: '
-	let new_content = input(l:asking)
+	let new_content = input('Replace as: ', l:content)
 	call inputrestore()
-	if new_content != ''
-		execute '%s/\<'.l:content.'\>/'.l:new_content.'/g'
+	if new_content != content
+		execute '%s/\<'.l:content.'\>/'.l:new_content.'/g|norm!``'
 	endif
 endfunction
 nnoremap <silent> <leader>r :call ReplaceCurWord()<CR>
@@ -151,12 +211,11 @@ nnoremap <silent> <leader>r :call ReplaceCurWord()<CR>
 function! ReplaceCurSelection()
 	let content = GetVisualSelection()
 	call inputsave()
-	let asking = 'Replace "'.l:content.'" with: '
-	let new_content = input(l:asking)
+	let new_content = input('Replace as: ', l:content)
 	call inputrestore()
-	if new_content != ''
+	if new_content != content
 		let content = escape(l:content, '\\/.*$^~[]')
-		execute '%s/'.l:content.'/'.l:new_content.'/g'
+		execute '%s/'.l:content.'/'.l:new_content.'/g|norm!``'
 	endif
 endfunction
 vnoremap <silent> <leader>r :call ReplaceCurSelection()<CR>
