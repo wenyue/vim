@@ -138,6 +138,15 @@ set guitablabel=%{NeatGuiTabLabel()}
 " -------------------------------------编辑配置---------------------------------
 filetype plugin indent on 
 
+" 退格键
+set backspace=indent,eol,start whichwrap+=<,>,[,]
+
+" 拷贝
+map <C-v> "+gP
+vn <C-c> "+y
+no p "0p
+exe 'inoremap <script> <C-v>' paste#paste_cmd['i']
+
 " tab长度
 set tabstop=4
 set softtabstop=4
