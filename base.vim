@@ -1,12 +1,12 @@
 autocmd! bufwritepost *.vim source %
 " -------------------------------------基础配置---------------------------------
 if !exists("g:os")
-    if has("win64") || has("win32") || has("win16")
-        let g:os = "Windows"
+	if has("win64") || has("win32") || has("win16")
+		let g:os = "Windows"
 		behave mswin
-    else
-        let g:os = substitute(system('uname'), '\n', '', '')
-    endif
+	else
+		let g:os = substitute(system('uname'), '\n', '', '')
+	endif
 endif
 
 " 不兼容vi
@@ -25,7 +25,7 @@ set smartcase
 " 搜索配置
 set hlsearch
 set incsearch
-nn <C-n> :nohl<CR>
+nn <silent> <C-n> :nohl<CR>
 
 " 使用鼠标
 set mouse=a
@@ -50,23 +50,23 @@ source $VIMRUNTIME/delmenu.vim
 source $VIMRUNTIME/menu.vim
 if g:os == 'Windows'
 	function! QfMakeConv()
-		let qflist = getqflist()
-		for i in qflist
-			let i.text = iconv(i.text, "cp936", "utf-8")
-		endfor
-		call setqflist(qflist)
+	   let qflist = getqflist()
+	   for i in qflist
+		  let i.text = iconv(i.text, "cp936", "utf-8")
+	   endfor
+	   call setqflist(qflist)
 	endfunction
-	autocmd QuickFixCmdPost * call QfMakeConv()
+	autocmd QuickfixCmdPost grep call QfMakeConv()
 endif
 
 " 启动最大化
 if g:os == 'Windows'
-    autocmd GUIEnter * simalt ~x
+	autocmd GUIEnter * simalt ~x
 else
 	function! MaximizeWindow()
 		silent !wmctrl -r :ACTIVE: -b add,maximized_vert,maximized_horz
 	endfunction
-    autocmd GUIEnter * call MaximizeWindow()
+	autocmd GUIEnter * call MaximizeWindow()
 endif
 
 " 设置补全顺序
@@ -100,39 +100,39 @@ nn $ g$
 
 " 标签名字
 function! NeatBuffer(bufnr, fullname)
-    let l:name = bufname(a:bufnr)
-    if getbufvar(a:bufnr, '&modifiable')
-        if l:name == ''
-            return '[No Name]'
-        else
-            if a:fullname 
-                return fnamemodify(l:name, ':p')
-            else
-                return fnamemodify(l:name, ':t')
-            endif
-        endif
-    else
-        let l:buftype = getbufvar(a:bufnr, '&buftype')
-        if l:buftype == 'quickfix'
-            return '[Quickfix]'
-        elseif l:name != ''
-            if a:fullname 
-                return '-'.fnamemodify(l:name, ':p')
-            else
-                return '-'.fnamemodify(l:name, ':t')
-            endif
-        else
-        endif
-        return '[No Name]'
-    endif
+	let l:name = bufname(a:bufnr)
+	if getbufvar(a:bufnr, '&modifiable')
+		if l:name == ''
+			return '[No Name]'
+		else
+			if a:fullname 
+				return fnamemodify(l:name, ':p')
+			else
+				return fnamemodify(l:name, ':t')
+			endif
+		endif
+	else
+		let l:buftype = getbufvar(a:bufnr, '&buftype')
+		if l:buftype == 'quickfix'
+			return '[Quickfix]'
+		elseif l:name != ''
+			if a:fullname 
+				return '-'.fnamemodify(l:name, ':p')
+			else
+				return '-'.fnamemodify(l:name, ':t')
+			endif
+		else
+		endif
+		return '[No Name]'
+	endif
 endfunc
 
 function! NeatGuiTabLabel()
-    let l:num = v:lnum
-    let l:buflist = tabpagebuflist(l:num)
-    let l:winnr = tabpagewinnr(l:num)
-    let l:bufnr = l:buflist[l:winnr - 1]
-    return l:num.': '.NeatBuffer(l:bufnr, 0)
+	let l:num = v:lnum
+	let l:buflist = tabpagebuflist(l:num)
+	let l:winnr = tabpagewinnr(l:num)
+	let l:bufnr = l:buflist[l:winnr - 1]
+	return l:num.': '.NeatBuffer(l:bufnr, 0)
 endfunc
 
 set guitablabel=%{NeatGuiTabLabel()}
@@ -196,22 +196,22 @@ nn <M-l> <C-w>l
 
 " 快捷替换
 function! GetVisualSelection()
-    " Why is this not a built-in Vim script function?!
-    let [line_start, column_start] = getpos("'<")[1:2]
-    let [line_end, column_end] = getpos("'>")[1:2]
-    let lines = getline(line_start, line_end)
-    if len(lines) == 0
-        return ''
-    endif
-    let lines[-1] = lines[-1][: column_end - (&selection == 'inclusive' ? 1 : 2)]
-    let lines[0] = lines[0][column_start - 1:]
-    return join(lines, "\n")
+	" Why is this not a built-in Vim script function?!
+	let [line_start, column_start] = getpos("'<")[1:2]
+	let [line_end, column_end] = getpos("'>")[1:2]
+	let lines = getline(line_start, line_end)
+	if len(lines) == 0
+		return ''
+	endif
+	let lines[-1] = lines[-1][: column_end - (&selection == 'inclusive' ? 1 : 2)]
+	let lines[0] = lines[0][column_start - 1:]
+	return join(lines, "\n")
 endfunction
 
 function! ReplaceCurWord()
 	let content = expand('<cword>')
 	call inputsave()
-	let new_content = input('Replace as: ', l:content)
+	let new_content = input("Replace '".l:content."' with: ", l:content)
 	call inputrestore()
 	if new_content != content && new_content != ''
 		execute '%s/\<'.l:content.'\>/'.l:new_content.'/g|norm!``'
@@ -222,7 +222,7 @@ nn <leader>r :call ReplaceCurWord()<CR>
 function! ReplaceCurSelection()
 	let content = GetVisualSelection()
 	call inputsave()
-	let new_content = input('Replace as: ', l:content)
+	let new_content = input("Replace '".l:content."' with: ", l:content)
 	call inputrestore()
 	if new_content != content && new_content != ''
 		let content = escape(l:content, '\\/.*$^~[]')
