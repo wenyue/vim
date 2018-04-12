@@ -262,7 +262,7 @@ let g:ctrlp_working_path_mode = 'rw'
 let g:ctrlp_match_window = 'bottom,order:ttb,min:1,max:20,results:100'
 let g:ctrlp_match_func = { 'match': 'pymatcher#PyMatch' }
 let g:ctrlp_use_caching = 0
-let g:ctrlp_user_command = 'ag %s -l --nocolor -g ""'
+let g:ctrlp_user_command = '"'.s:plugged_dir.'vim/tools/ag" %s -l --nocolor -g ""'
 let g:ctrlp_user_command .= ' --ignore="*.pyo"'
 let g:ctrlp_user_command .= ' --ignore="*.pyc"'
 let g:ctrlp_prompt_mappings = {
