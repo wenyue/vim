@@ -247,10 +247,22 @@ function! OpenDir(filename)
 endfunction
 nn <silent> <leader>w :call OpenDir(expand('%')) <CR>
 
+function! ToWinPath(path)
+	return substitute(a:path, '/', '\', 'g')
+endfunction
+
+function! ToUnixPath(path)
+	return substitute(a:path, '\', '/', 'g')
+endfunction
+
+function! ToSetPath(path)
+	return substitute(a:path, ' ', '\\ ', 'g')
+endfunction
+
 
 " -------------------------------------插件配置---------------------------------
-let s:plugged_dir = expand('<sfile>:p:h:h').'/'
-call plug#begin(s:plugged_dir)
+let s:plugged_path = ToUnixPath(expand('<sfile>:p:h:h').'/')
+call plug#begin(s:plugged_path)
 
 " 文件查找
 Plug 'kien/ctrlp.vim'
@@ -262,7 +274,7 @@ let g:ctrlp_working_path_mode = 'rw'
 let g:ctrlp_match_window = 'bottom,order:ttb,min:1,max:20,results:100'
 let g:ctrlp_match_func = { 'match': 'pymatcher#PyMatch' }
 let g:ctrlp_use_caching = 0
-let g:ctrlp_user_command = 'ag %s -l --nocolor -g ""'
+let g:ctrlp_user_command = '"'.s:plugged_path.'vim/tools/ag" %s -l --nocolor -g ""'
 let g:ctrlp_user_command .= ' --ignore="*.pyo"'
 let g:ctrlp_user_command .= ' --ignore="*.pyc"'
 let g:ctrlp_prompt_mappings = {
@@ -292,7 +304,7 @@ let g:ycm_seed_identifiers_with_syntax = 1
 
 " 语法检测
 Plug 'w0rp/ale', {'do': 'pip install flake8'}
-let g:ale_python_flake8_options = '--config="'.s:plugged_dir.'vim/.flake8"'
+let g:ale_python_flake8_options = '--config="'.s:plugged_path.'vim/.flake8"'
 let g:ale_linters = {
 \	'python': ['flake8'],
 \}
@@ -306,7 +318,7 @@ map <silent> <leader>c <plug>NERDCommenterToggle
 
 " 主题
 Plug 'tomasr/molokai'
-let s:molokai_path = s:plugged_dir.'molokai/colors/molokai.vim'
+let s:molokai_path = s:plugged_path.'molokai/colors/molokai.vim'
 if filereadable(s:molokai_path) && (!exists('g:colors_name') || g:colors_name != "molokai")
 	syntax enable
 	syntax on
@@ -320,7 +332,7 @@ Plug 'wenyue/yapf', {'do': 'python setup.py install'}
 function! Yapf() range
 	" Determine range to format.
 	let l:line_ranges = a:firstline.'-'.a:lastline
-	let l:cmd = 'yapf --lines='.l:line_ranges.' --style="'.s:plugged_dir.'vim/.style.yapf"'
+	let l:cmd = 'yapf --lines='.l:line_ranges.' --style="'.s:plugged_path.'vim/.style.yapf"'
 
 	" Call YAPF with the current buffer
 	let l:formatted_text = system(l:cmd, join(getline(1, '$'), "\n")."\n")
@@ -339,21 +351,13 @@ call plug#end()
 
 
 " -------------------------------------项目配置---------------------------------
-function! ToWinPath(path)
-	return substitute(substitute(a:path, '/', '\', 'g'), ' ', '\\ ', 'g')
-endfunction
-
-function! ToUnixPath(path)
-	return substitute(substitute(a:path, '\', '/', 'g'), ' ', '\\ ', 'g')
-endfunction
-
 function! LoadProjectConfig(project)
-	execute 'source' s:plugged_dir.'vim/projects/'.a:project.'.vim'
+	execute 'source' s:plugged_path.'vim/projects/'.a:project.'.vim'
 endfunction
 
 let s:workspace = findfile('workspace.vim', '.;')
 if !empty(s:workspace) && !exists('g:root_path')
-	let g:root_path = ToUnixPath(fnamemodify(s:workspace, ":p:h").'\')
+	let g:root_path = ToUnixPath(fnamemodify(s:workspace, ":p:h").'/')
 	let g:work_path = g:root_path
 
 	" 导入项目配置
