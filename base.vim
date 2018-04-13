@@ -213,7 +213,7 @@ function! ReplaceCurWord()
 	call inputsave()
 	let new_content = input("Replace '".l:content."' with: ", l:content)
 	call inputrestore()
-	if new_content != content && new_content != ''
+	if new_content !=# content && new_content != ''
 		execute '%s/\<'.l:content.'\>/'.l:new_content.'/g|norm!``'
 	endif
 endfunction
@@ -224,7 +224,7 @@ function! ReplaceCurSelection()
 	call inputsave()
 	let new_content = input("Replace '".l:content."' with: ", l:content)
 	call inputrestore()
-	if new_content != content && new_content != ''
+	if new_content !=# content && new_content != ''
 		let content = escape(l:content, '\\/.*$^~[]')
 		execute '%s/'.l:content.'/'.l:new_content.'/g|norm!``'
 	endif
