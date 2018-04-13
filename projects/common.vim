@@ -15,7 +15,7 @@ call SetPath()
 
 " CtrlP
 function! CtrlP()
-	silent execute 'CtrlP '.g:work_path
+	silent execute 'CtrlP' g:work_path
 endfunction
 map <silent> <leader>f :call CtrlP() <CR>
 
@@ -37,11 +37,11 @@ command! -nargs=1 Svn :call Svn('<args>')
 " GIT
 function! Git(command)
 	if a:command == 'pull'
-		silent execute '!start git pull' g:work_path
+		silent execute '!start git pull'
 	elseif a:command == 'ci'
 		silent execute '!start git gui citool'
 	elseif a:command == 'push'
-		silent execute '!start git push' g:work_path
+		silent execute '!start git push'
 	endif
 endfunction
 command! -nargs=1 Git :call Git('<args>')
