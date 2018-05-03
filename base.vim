@@ -174,25 +174,27 @@ set foldlevel=99
 nn <space> za
 
 " 标签快捷键
-nn <M-1> 1gt
-nn <M-2> 2gt
-nn <M-3> 3gt
-nn <M-4> 4gt
-nn <M-5> 5gt
-nn <M-6> 6gt
-nn <M-7> 7gt
-nn <M-8> 8gt
-nn <M-9> 9gt
-nn <silent> <M-n> :tabnext<CR>
-nn <silent> <M-p> :tabprevious<CR>
-nn <silent> <M-e> :tabedit %<CR>
-nn <silent> <M-q> :tabclose<CR>
+if g:os == 'Windows'
+	nn <M-1> 1gt
+	nn <M-2> 2gt
+	nn <M-3> 3gt
+	nn <M-4> 4gt
+	nn <M-5> 5gt
+	nn <M-6> 6gt
+	nn <M-7> 7gt
+	nn <M-8> 8gt
+	nn <M-9> 9gt
+	nn <silent> <M-n> :tabnext<CR>
+	nn <silent> <M-p> :tabprevious<CR>
+	nn <silent> <M-e> :tabedit %<CR>
+	nn <silent> <M-q> :tabclose<CR>
+endif
 
 " Window快捷键
-nn <M-h> <C-w>h
-nn <M-j> <C-w>j
-nn <M-k> <C-w>k
-nn <M-l> <C-w>l
+nn <Left> <C-w>h
+nn <Down> <C-w>j
+nn <Up> <C-w>k
+nn <Right> <C-w>l
 
 " 快捷替换
 function! GetVisualSelection()
@@ -233,19 +235,21 @@ vn <leader>r :call ReplaceCurSelection()<CR>
 
 
 " -------------------------------------其它配置---------------------------------
-" 显示图片
-function! OpenPic(file)
-	silent execute '!' a:file
-	silent execute 'b #'
-	silent execute 'bd #'
-endfunction
-autocmd bufenter *.jpg,*.png silent call OpenPic(expand('<afile>'))
+if g:os == 'Windows'
+	" 显示图片
+	function! OpenPic(file)
+		silent execute '!' a:file
+		silent execute 'b #'
+		silent execute 'bd #'
+	endfunction
+	autocmd bufenter *.jpg,*.png silent call OpenPic(expand('<afile>'))
 
-" 打开文件所在目录
-function! OpenDir(filename)
-	silent execute '!start explorer /select,' a:filename
-endfunction
-nn <silent> <leader>w :call OpenDir(expand('%')) <CR>
+	" 打开文件所在目录
+	function! OpenDir(filename)
+		silent execute '!start explorer /select,' a:filename
+	endfunction
+	nn <silent> <leader>w :call OpenDir(expand('%')) <CR>
+endif
 
 function! ToWinPath(path)
 	return substitute(a:path, '/', '\', 'g')
@@ -280,7 +284,11 @@ let g:ctrlp_working_path_mode = 'rw'
 let g:ctrlp_match_window = 'bottom,order:ttb,min:1,max:20,results:100'
 let g:ctrlp_match_func = { 'match': 'pymatcher#PyMatch' }
 let g:ctrlp_use_caching = 0
-let g:ctrlp_user_command = 'ag -i "%s" -l --nocolor -g ""'
+if g:os == 'Windows'
+	let g:ctrlp_user_command = 'ag -i "%s" -l --nocolor -f -g ""'
+else
+	let g:ctrlp_user_command = 'ag -i %s -l --nocolor -f -g ""'
+endif
 let g:ctrlp_user_command .= ' --ignore="*.pyo"'
 let g:ctrlp_user_command .= ' --ignore="*.pyc"'
 let g:ctrlp_prompt_mappings = {
@@ -290,7 +298,7 @@ let g:ctrlp_prompt_mappings = {
 
 " 全文搜索
 Plug 'wenyue/vim-easygrep'
-set grepprg=ag\ --nogroup\ --nocolor
+set grepprg=ag\ --nogroup\ --nocolor\ -f
 let g:EasyGrepCommand = 1
 let g:EasyGrepRecursive = 1
 let g:EasyGrepIgnoreCase = 0
@@ -300,7 +308,11 @@ let g:EasyGrepJumpToMatch = 0
 let g:EasyGrepFilesToExclude = '.svn,.git'
 
 " 自动补全
-Plug 'Valloric/YouCompleteMe', {'do': 'python install.py --msvc 14'}
+if g:os == 'Windows'
+	Plug 'Valloric/YouCompleteMe', {'do': 'python install.py --msvc 14'}
+else
+	Plug 'Valloric/YouCompleteMe', {'do': 'python install.py --clang-completer'}
+endif
 set completeopt=menuone,preview
 autocmd InsertLeave * if pumvisible() == 0|pclose|endif
 nn <leader>d :YcmCompleter GoToDefinitionElseDeclaration<CR>
@@ -313,6 +325,8 @@ Plug 'w0rp/ale', {'do': 'pip install flake8'}
 let g:ale_python_flake8_options = '--config="'.s:plugged_path.'vim/.flake8"'
 let g:ale_linters = {
 \	'python': ['flake8'],
+\	'c': ['clang'],
+\	'cpp': ['clang'],
 \}
 
 " 快速注释
@@ -333,25 +347,10 @@ if filereadable(s:molokai_path) && (!exists('g:colors_name') || g:colors_name !=
 	execute 'source' s:molokai_path
 endif
 
+
 " 格式整理
-Plug 'wenyue/yapf', {'do': 'python setup.py install'}
-function! Yapf() range
-	" Determine range to format.
-	let l:line_ranges = a:firstline.'-'.a:lastline
-	let l:cmd = 'yapf --lines='.l:line_ranges.' --style="'.s:plugged_path.'vim/.style.yapf"'
-
-	" Call YAPF with the current buffer
-	let l:formatted_text = system(l:cmd, join(getline(1, '$'), "\n")."\n")
-
-	" Update the buffer.
-	execute '1,'.string(line('$')).'delete'
-	call setline(1, split(l:formatted_text, "\n"))
-
-	" Reset cursor to first line of the formatted range.
-	call cursor(a:firstline, 1)
-endfunction
-command! -range=% Yapf <line1>,<line2>call Yapf()
-autocmd FileType python map <silent> <leader>s :call Yapf()<CR>
+Plug 'Chiel92/vim-autoformat'
+map <silent> <leader>s :Autoformat<CR>
 
 call plug#end()
 
@@ -368,7 +367,10 @@ if !empty(s:workspace) && !exists('g:root_path')
 
 	" 导入项目配置
 	execute 'source' s:workspace
-
-	" 导入公共配置
-	call LoadProjectConfig('common')
+else
+	let g:root_path = ToUnixPath(expand('%:p:h').'/')
+	let g:work_path = g:root_path
 endif
+
+" 导入公共配置
+call LoadProjectConfig('common')
