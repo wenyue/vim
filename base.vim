@@ -347,6 +347,7 @@ Plug 'scrooloose/nerdcommenter'
 let g:NERDDefaultAlign = 'left'
 let g:NERDCreateDefaultMappings = 0
 let g:NERDCommentEmptyLines = 1
+let g:NERDSpaceDelims = 1
 map <silent> <leader>c <plug>NERDCommenterToggle
 
 " 主题
