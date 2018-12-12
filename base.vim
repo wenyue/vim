@@ -294,6 +294,7 @@ if !exists('s:tools_path')
 endif
 
 " 头文件切换
+" <leader>a     Switch between header and source
 execute 'source' s:base_path.'/scripts/fswitch.vim'
 map <silent> <leader>a :FSHere<CR>
 
@@ -302,6 +303,7 @@ execute 'source' s:base_path.'/scripts/plug.vim'
 call plug#begin(s:plugged_path)
 
 " 文件查找
+" <leader>f     Search files
 Plug 'kien/ctrlp.vim'
 Plug 'FelikZ/ctrlp-py-matcher'
 let g:ctrlp_match_window_reversed  =  0
@@ -328,6 +330,8 @@ endfunction
 map <silent> <leader>f :call CtrlP() <CR>
 
 " 全文搜索
+" <leader>vv    Global search
+" <leader>vr    Global replace
 Plug 'wenyue/vim-easygrep'
 set grepprg=ag\ --nogroup\ --nocolor\ -f
 let g:EasyGrepCommand = 1
@@ -352,6 +356,8 @@ let g:ycm_complete_in_strings = 1
 let g:ycm_seed_identifiers_with_syntax = 1
 
 " 格式整理
+" <leader>s     Format
+" <,><leader>s  Range Format
 Plug 'Chiel92/vim-autoformat'
 map <silent> <leader>s :Autoformat<CR>
 
@@ -364,12 +370,21 @@ let g:ale_linters = {
             \}
 
 " 快速注释
+" <,><leader>c  Toggle comment
 Plug 'scrooloose/nerdcommenter'
 let g:NERDDefaultAlign = 'left'
 let g:NERDCreateDefaultMappings = 0
 let g:NERDCommentEmptyLines = 1
 let g:NERDSpaceDelims = 1
 map <silent> <leader>c <plug>NERDCommenterToggle
+
+" git differ
+" [c            Next hunk
+" ]c            Previous hunk
+" <leader>hp    Preview
+" <leader>hs    Stage
+" <leader>hu    Undo
+Plug 'airblade/vim-gitgutter'
 
 " 主题
 Plug 'altercation/vim-colors-solarized'
