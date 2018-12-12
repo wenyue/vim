@@ -1,5 +1,7 @@
 autocmd! bufwritepost *.vim source %
-" -------------------------------------基础配置---------------------------------
+
+
+" -------------------------------------公用配置---------------------------------
 if !exists("g:os")
     if has("win64") || has("win32") || has("win16")
         let g:os = "Windows"
@@ -9,6 +11,23 @@ if !exists("g:os")
     endif
 endif
 
+function! ToWinPath(path)
+    return substitute(a:path, '/', '\', 'g')
+endfunction
+
+function! ToUnixPath(path)
+    return substitute(a:path, '\', '/', 'g')
+endfunction
+
+function! ToSetPath(path)
+    return substitute(a:path, ' ', '\\ ', 'g')
+endfunction
+
+let g:root_path = ToUnixPath(expand('%:p:h'))
+let g:work_path = g:root_path
+
+
+" -------------------------------------基础配置---------------------------------
 " 不兼容vi
 set nocompatible
 
@@ -41,7 +60,7 @@ set noundofile
 " 隐藏缓冲区
 set hidden
 
-" 内部编码
+" 编码设置
 set encoding=UTF-8
 set termencoding=UTF-8
 set langmenu=zh_CN.UTF-8
@@ -58,22 +77,53 @@ if g:os == 'Windows'
     endfunction
     autocmd QuickfixCmdPost grep call QfMakeConv()
 endif
-
-" 启动最大化
-if g:os == 'Windows'
-    autocmd GUIEnter * simalt ~x
-else
-    function! MaximizeWindow()
-        silent !wmctrl -r :ACTIVE: -b add,maximized_vert,maximized_horz
-    endfunction
-    autocmd GUIEnter * call MaximizeWindow()
-endif
+function! SaveAsUTF8()
+    set fileencoding=UTF-8
+    set nobomb
+endfunction
+autocmd FileType lua,python,vim call SaveAsUTF8()
 
 " 设置补全顺序
 set cpt=.,w,b
 
 " 不要发出bell声音
 set vb
+
+" Window快捷键
+nn <Left> <C-w>h
+nn <Down> <C-w>j
+nn <Up> <C-w>k
+nn <Right> <C-w>l
+
+" 折行移动
+nn j gj
+nn k gk
+nn ^ g^
+nn $ g$
+
+" 标签快捷键
+if g:os == 'Windows'
+    nn <M-1> 1gt
+    nn <M-2> 2gt
+    nn <M-3> 3gt
+    nn <M-4> 4gt
+    nn <M-5> 5gt
+    nn <M-6> 6gt
+    nn <M-7> 7gt
+    nn <M-8> 8gt
+    nn <M-9> 9gt
+    nn <silent> <M-n> :tabnext<CR>
+    nn <silent> <M-p> :tabprevious<CR>
+    nn <silent> <M-e> :tabedit %<CR>
+    nn <silent> <M-q> :tabclose<CR>
+endif
+
+" 设置path
+function! SetPath()
+    set path=.
+    silent execute 'set path+='.ToSetPath(g:work_path.'\**')
+endfunction
+call SetPath()
 
 
 " -------------------------------------界面配置---------------------------------
@@ -90,13 +140,24 @@ set so=5
 set guioptions-=T
 set guioptions-=m
 
+" 启动最大化
+if g:os == 'Windows'
+    autocmd GUIEnter * simalt ~x
+else
+    function! MaximizeWindow()
+        silent !wmctrl -r :ACTIVE: -b add,maximized_vert,maximized_horz
+    endfunction
+    autocmd GUIEnter * call MaximizeWindow()
+endif
+
 " 折行设置
 set wrap
 set showbreak=->\
-nn j gj
-nn k gk
-nn ^ g^
-nn $ g$
+
+" 代码折叠
+set foldmethod=indent
+set foldlevel=99
+nn <space> za
 
 " 标签名字
 function! NeatBuffer(bufnr, fullname)
@@ -137,17 +198,18 @@ endfunc
 
 set guitablabel=%{NeatGuiTabLabel()}
 
+" 显示状态行
+set laststatus=2
+function! ShowPath()
+    let filename = ToUnixPath(expand('%:p'))
+    return substitute(l:filename, g:work_path.'/', '', 'g')
+endfunction
+set statusline=%<%{ShowPath()}\ %h%m%r%=%-14.(%l,%c%V%)\ %P
+
 
 " -------------------------------------编辑配置---------------------------------
-filetype plugin indent on
-
 " 退格键
 set backspace=indent,eol,start whichwrap+=<,>,[,]
-
-" 拷贝
-"map <C-v> "+gP
-"vn <C-c> "+y
-"exe 'inoremap <script> <C-v>' paste#paste_cmd['i']
 
 " tab长度
 set tabstop=4
@@ -160,41 +222,6 @@ let g:python_recommended_style = 0
 " 换行
 set shiftwidth=4
 set shiftround
-
-" 使用utf-8编码
-function! SaveAsUTF8()
-    set fileencoding=UTF-8
-    set nobomb
-endfunction
-autocmd FileType lua,python,vim call SaveAsUTF8()
-
-" 代码折叠
-set foldmethod=indent
-set foldlevel=99
-nn <space> za
-
-" 标签快捷键
-if g:os == 'Windows'
-    nn <M-1> 1gt
-    nn <M-2> 2gt
-    nn <M-3> 3gt
-    nn <M-4> 4gt
-    nn <M-5> 5gt
-    nn <M-6> 6gt
-    nn <M-7> 7gt
-    nn <M-8> 8gt
-    nn <M-9> 9gt
-    nn <silent> <M-n> :tabnext<CR>
-    nn <silent> <M-p> :tabprevious<CR>
-    nn <silent> <M-e> :tabedit %<CR>
-    nn <silent> <M-q> :tabclose<CR>
-endif
-
-" Window快捷键
-nn <Left> <C-w>h
-nn <Down> <C-w>j
-nn <Up> <C-w>k
-nn <Right> <C-w>l
 
 " 快捷替换
 function! GetVisualSelection()
@@ -235,53 +262,44 @@ vn <leader>r :call ReplaceCurSelection()<CR>
 
 
 " -------------------------------------其它配置---------------------------------
+" 显示图片
 if g:os == 'Windows'
-    " 显示图片
     function! OpenPic(file)
         silent execute '!' a:file
         silent execute 'b #'
         silent execute 'bd #'
     endfunction
     autocmd bufenter *.jpg,*.png silent call OpenPic(expand('<afile>'))
+endif
 
-    " 打开文件所在目录
+" 打开文件所在目录
+if g:os == 'Windows'
     function! OpenDir(filename)
         silent execute '!start explorer /select,' a:filename
     endfunction
     nn <silent> <leader>w :call OpenDir(expand('%')) <CR>
 endif
 
-function! ToWinPath(path)
-    return substitute(a:path, '/', '\', 'g')
-endfunction
-
-function! ToUnixPath(path)
-    return substitute(a:path, '\', '/', 'g')
-endfunction
-
-function! ToSetPath(path)
-    return substitute(a:path, ' ', '\\ ', 'g')
-endfunction
-
 
 " -------------------------------------插件配置---------------------------------
-let s:plugged_path = ToUnixPath(expand('<sfile>:p:h:h').'/')
-let s:scripts_path = s:plugged_path.'vim/scripts/'
+filetype plugin indent on
 
-
-" 头文件切换
-execute 'source' s:scripts_path.'fswitch.vim'
-map <silent> <leader>a :FSHere<CR>
-
-" 开始加载plugs
-execute 'source' s:scripts_path.'plug.vim'
-call plug#begin(s:plugged_path)
+let s:base_path = ToUnixPath(expand('<sfile>:p:h'))
+let s:plugged_path = ToUnixPath(expand('<sfile>:p:h:h').'/plugged')
 
 " 添加tools目录
 if !exists('s:tools_path')
-    let s:tools_path = s:plugged_path.'vim/tools'
+    let s:tools_path = s:base_path.'/tools'
     let $PATH .= ';'.s:tools_path
 endif
+
+" 头文件切换
+execute 'source' s:base_path.'/scripts/fswitch.vim'
+map <silent> <leader>a :FSHere<CR>
+
+" 开始加载plugs
+execute 'source' s:base_path.'/scripts/plug.vim'
+call plug#begin(s:plugged_path)
 
 " 文件查找
 Plug 'kien/ctrlp.vim'
@@ -304,6 +322,10 @@ let g:ctrlp_prompt_mappings = {
             \ 'AcceptSelection("e")': [],
             \ 'AcceptSelection("r")': ['<cr>', '<2-LeftMouse>'],
             \ }
+function! CtrlP()
+    silent execute 'CtrlP' g:work_path
+endfunction
+map <silent> <leader>f :call CtrlP() <CR>
 
 " 全文搜索
 Plug 'wenyue/vim-easygrep'
@@ -335,7 +357,6 @@ map <silent> <leader>s :Autoformat<CR>
 
 " 语法检测
 Plug 'w0rp/ale', {'do': 'pip install flake8'}
-let g:ale_python_flake8_options = '--config="'.s:plugged_path.'vim/.flake8"'
 let g:ale_linters = {
             \   'python': ['flake8'],
             \   'c': ['clang'],
@@ -351,36 +372,33 @@ let g:NERDSpaceDelims = 1
 map <silent> <leader>c <plug>NERDCommenterToggle
 
 " 主题
-Plug 'tomasr/molokai'
-let s:molokai_path = s:plugged_path.'molokai/colors/molokai.vim'
-if filereadable(s:molokai_path) && (!exists('g:colors_name') || g:colors_name != "molokai")
-    syntax enable
-    syntax on
-    let g:rehash256 = 1
-    set t_Co=256
-    execute 'source' s:molokai_path
-endif
+Plug 'altercation/vim-colors-solarized'
+Plug 'morhetz/gruvbox'
 
 " 结束加载plugs
 call plug#end()
 
+" 加载之后选择主题
+syntax enable
+try
+    set background=dark
+    colorscheme gruvbox
+catch /^Vim\%((\a\+)\)\=:E185/
+    echo 'No such color scheme'
+endtry
 
 " -------------------------------------项目配置---------------------------------
 function! LoadProjectConfig(project)
-    execute 'source' s:plugged_path.'vim/projects/'.a:project.'.vim'
+    execute 'source' s:base_path.'/projects/'.a:project.'.vim'
 endfunction
 
 let s:workspace = findfile('workspace.vim', '.;')
-if !empty(s:workspace) && !exists('g:root_path')
-    let g:root_path = ToUnixPath(fnamemodify(s:workspace, ":p:h").'/')
+if !empty(s:workspace)
+    let g:root_path = ToUnixPath(fnamemodify(s:workspace, ":p:h"))
     let g:work_path = g:root_path
 
+    " 导入公共项目配置
+    call LoadProjectConfig('common')
     " 导入项目配置
     execute 'source' s:workspace
-else
-    let g:root_path = ToUnixPath(expand('%:p:h').'/')
-    let g:work_path = g:root_path
 endif
-
-" 导入公共配置
-call LoadProjectConfig('common')
