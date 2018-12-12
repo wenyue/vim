@@ -1,6 +1,4 @@
 autocmd! bufwritepost *.vim source %
-
-
 " -------------------------------------公用配置---------------------------------
 if !exists("g:os")
     if has("win64") || has("win32") || has("win16")
@@ -19,12 +17,17 @@ function! ToUnixPath(path)
     return substitute(a:path, '\', '/', 'g')
 endfunction
 
-function! ToSetPath(path)
-    return substitute(a:path, ' ', '\\ ', 'g')
-endfunction
+let s:workspace = findfile('workspace.vim', '.;')
+if !empty(s:workspace)
+    let g:root_path = ToUnixPath(fnamemodify(s:workspace, ":p:h"))
+    let g:work_path = g:root_path
 
-let g:root_path = ToUnixPath(expand('%:p:h'))
-let g:work_path = g:root_path
+    " 导入项目配置
+    execute 'source' s:workspace
+else
+    let g:root_path = ToUnixPath(expand('%:p:h'))
+    let g:work_path = g:root_path
+endif
 
 
 " -------------------------------------基础配置---------------------------------
@@ -35,7 +38,10 @@ set nocompatible
 set autoread
 
 " 配置leader键
-let mapleader = ','
+let mapleader = '\'
+
+" 刷新时间
+set updatetime=200
 
 " 忽略大小写
 set ignorecase
@@ -89,6 +95,13 @@ set cpt=.,w,b
 " 不要发出bell声音
 set vb
 
+" 设置path
+function! SetPath()
+    set path=.
+    silent execute 'set path+='.substitute(g:work_path.'\**', ' ', '\\ ', 'g')
+endfunction
+call SetPath()
+
 " Window快捷键
 nn <Left> <C-w>h
 nn <Down> <C-w>j
@@ -117,13 +130,6 @@ if g:os == 'Windows'
     nn <silent> <M-e> :tabedit %<CR>
     nn <silent> <M-q> :tabclose<CR>
 endif
-
-" 设置path
-function! SetPath()
-    set path=.
-    silent execute 'set path+='.ToSetPath(g:work_path.'\**')
-endfunction
-call SetPath()
 
 
 " -------------------------------------界面配置---------------------------------
@@ -224,6 +230,7 @@ set shiftwidth=4
 set shiftround
 
 " 快捷替换
+" <leader>r     Local replace
 function! GetVisualSelection()
     " Why is this not a built-in Vim script function?!
     let [line_start, column_start] = getpos("'<")[1:2]
@@ -341,8 +348,10 @@ let g:EasyGrepReplaceWindowMode = 2
 let g:EasyGrep = 2
 let g:EasyGrepJumpToMatch = 0
 let g:EasyGrepFilesToExclude = '.svn,.git'
+let g:EasyGrepRoot=g:work_path
 
 " 自动补全
+" <leader>d     Go to definition or declaration
 if g:os == 'Windows'
     Plug 'Valloric/YouCompleteMe', {'do': 'python install.py --msvc 14'}
 else
@@ -362,11 +371,12 @@ Plug 'Chiel92/vim-autoformat'
 map <silent> <leader>s :Autoformat<CR>
 
 " 语法检测
+" Disable c family linter.
 Plug 'w0rp/ale', {'do': 'pip install flake8'}
 let g:ale_linters = {
             \   'python': ['flake8'],
-            \   'c': ['clang'],
-            \   'cpp': ['clang'],
+            \   'c': [''],
+            \   'cpp': [''],
             \}
 
 " 快速注释
@@ -407,13 +417,7 @@ function! LoadProjectConfig(project)
     execute 'source' s:base_path.'/projects/'.a:project.'.vim'
 endfunction
 
-let s:workspace = findfile('workspace.vim', '.;')
-if !empty(s:workspace)
-    let g:root_path = ToUnixPath(fnamemodify(s:workspace, ":p:h"))
-    let g:work_path = g:root_path
-
-    " 导入公共项目配置
-    call LoadProjectConfig('common')
-    " 导入项目配置
-    execute 'source' s:workspace
+" 导入公共项目配置
+if exists('g:project')
+    call LoadProjectConfig(g:project)
 endif
