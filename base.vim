@@ -17,6 +17,16 @@ function! ToUnixPath(path)
     return substitute(a:path, '\', '/', 'g')
 endfunction
 
+function! ToPathString(path)
+    return substitute(a:path, ' ', '\\ ', 'g')
+endfunction
+
+" workspace中的配置
+let g:root_path = ToUnixPath(expand('%:p:h'))
+let g:work_path = g:root_path
+let g:enable_ycm = 1
+let g:enable_ale = 1
+
 let s:workspace = findfile('workspace.vim', '.;')
 if !empty(s:workspace)
     let g:root_path = ToUnixPath(fnamemodify(s:workspace, ":p:h"))
@@ -24,9 +34,6 @@ if !empty(s:workspace)
 
     " 导入项目配置
     execute 'source' s:workspace
-else
-    let g:root_path = ToUnixPath(expand('%:p:h'))
-    let g:work_path = g:root_path
 endif
 
 
@@ -98,7 +105,7 @@ set vb
 " 设置path
 function! SetPath()
     set path=.
-    silent execute 'set path+='.substitute(g:work_path.'\**', ' ', '\\ ', 'g')
+    silent execute 'set path+='.ToPathString(g:work_path.'/**')
 endfunction
 call SetPath()
 
@@ -352,32 +359,38 @@ let g:EasyGrepRoot=g:work_path
 
 " 自动补全
 " <leader>d     Go to definition or declaration
-if g:os == 'Windows'
-    Plug 'Valloric/YouCompleteMe', {'do': 'python install.py --msvc 14'}
-else
-    Plug 'Valloric/YouCompleteMe', {'do': 'python install.py --clang-completer'}
+if g:enable_ycm == 1
+    if g:os == 'Windows'
+        Plug 'Valloric/YouCompleteMe', {'do': 'python install.py --msvc 14'}
+    else
+        Plug 'Valloric/YouCompleteMe', {'do': 'python install.py --clang-completer'}
+    endif
+    set completeopt=menuone,preview
+    autocmd InsertLeave * if pumvisible() == 0|pclose|endif
+    let g:ycm_collect_identifiers_from_tags_files=1
+    let g:ycm_complete_in_comments = 1
+    let g:ycm_complete_in_strings = 1
+    let g:ycm_seed_identifiers_with_syntax = 1
+    let g:ycm_show_diagnostics_ui = 1
+    nn <leader>d :YcmCompleter GoToDefinitionElseDeclaration<CR>
 endif
-set completeopt=menuone,preview
-autocmd InsertLeave * if pumvisible() == 0|pclose|endif
-nn <leader>d :YcmCompleter GoToDefinitionElseDeclaration<CR>
-let g:ycm_complete_in_comments = 1
-let g:ycm_complete_in_strings = 1
-let g:ycm_seed_identifiers_with_syntax = 1
+
+" 语法检测
+" Disable c family linter.
+if g:enable_ale == 1
+    Plug 'w0rp/ale', {'do': 'pip install flake8'}
+    let g:ale_linters = {
+                \   'python': ['flake8'],
+                \   'c': ['clang'],
+                \   'cpp': ['clang'],
+                \}
+endif
 
 " 格式整理
 " <leader>s     Format
 " <,><leader>s  Range Format
 Plug 'Chiel92/vim-autoformat'
 map <silent> <leader>s :Autoformat<CR>
-
-" 语法检测
-" Disable c family linter.
-Plug 'w0rp/ale', {'do': 'pip install flake8'}
-let g:ale_linters = {
-            \   'python': ['flake8'],
-            \   'c': [''],
-            \   'cpp': [''],
-            \}
 
 " 快速注释
 " <,><leader>c  Toggle comment
