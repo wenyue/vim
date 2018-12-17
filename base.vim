@@ -372,17 +372,18 @@ if g:enable_ycm == 1
     let g:ycm_complete_in_strings = 1
     let g:ycm_seed_identifiers_with_syntax = 1
     let g:ycm_show_diagnostics_ui = 1
+    let g:ycm_max_diagnostics_to_display = 100
     nn <leader>d :YcmCompleter GoToDefinitionElseDeclaration<CR>
 endif
 
 " 语法检测
 " Disable c family linter.
 if g:enable_ale == 1
-    Plug 'w0rp/ale', {'do': 'pip install flake8'}
+    Plug 'w0rp/ale', {'do': 'pip install flake8 cpplint'}
     let g:ale_linters = {
                 \   'python': ['flake8'],
-                \   'c': ['clang'],
-                \   'cpp': ['clang'],
+                \   'c': ['cpplint'],
+                \   'cpp': ['cpplint'],
                 \}
 endif
 
