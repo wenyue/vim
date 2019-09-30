@@ -109,11 +109,14 @@ function! SetPath()
 endfunction
 call SetPath()
 
-" Window快捷键
-nn <Left> <C-w>h
-nn <Down> <C-w>j
-nn <Up> <C-w>k
-nn <Right> <C-w>l
+" Split navigations
+nn <C-h> <C-w>h
+nn <C-j> <C-w>j
+nn <C-k> <C-w>k
+nn <C-l> <C-w>l
+
+set splitbelow
+set splitright
 
 " 折行移动
 nn j gj
@@ -311,6 +314,7 @@ endif
 " <leader>a     Switch between header and source
 execute 'source' s:base_path.'/scripts/fswitch.vim'
 map <silent> <leader>a :FSHere<CR>
+let g:fsnonewfiles = "on"
 
 " 开始加载plugs
 execute 'source' s:base_path.'/scripts/plug.vim'
@@ -355,7 +359,7 @@ let g:EasyGrepReplaceWindowMode = 2
 let g:EasyGrep = 2
 let g:EasyGrepJumpToMatch = 0
 let g:EasyGrepFilesToExclude = '.svn,.git'
-let g:EasyGrepRoot=g:work_path
+let g:EasyGrepRoot = g:work_path
 
 " 自动补全
 " <leader>d     Go to definition or declaration
@@ -413,6 +417,9 @@ Plug 'airblade/vim-gitgutter'
 " 主题
 Plug 'altercation/vim-colors-solarized'
 Plug 'morhetz/gruvbox'
+
+" tmux 快捷跳转
+Plug 'christoomey/vim-tmux-navigator'
 
 " 结束加载plugs
 call plug#end()
