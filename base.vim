@@ -17,10 +17,6 @@ function! ToUnixPath(path)
     return substitute(a:path, '\', '/', 'g')
 endfunction
 
-function! ToPathString(path)
-    return substitute(a:path, ' ', '\\ ', 'g')
-endfunction
-
 " workspace中的配置
 let g:root_path = ToUnixPath(expand('%:p:h'))
 let g:work_path = g:root_path
@@ -105,7 +101,7 @@ set vb
 " 设置path
 function! SetPath()
     set path=.
-    silent execute 'set path+='.ToPathString(g:work_path.'/**')
+    silent execute 'set path+='.substitute(g:work_path.'/**', ' ', '\\ ', 'g')
 endfunction
 call SetPath()
 
@@ -371,7 +367,7 @@ if g:enable_ycm == 1
     endif
     set completeopt=menuone,preview
     autocmd InsertLeave * if pumvisible() == 0|pclose|endif
-    let g:ycm_collect_identifiers_from_tags_files=1
+    let g:ycm_collect_identifiers_from_tags_files=0
     let g:ycm_complete_in_comments = 1
     let g:ycm_complete_in_strings = 1
     let g:ycm_seed_identifiers_with_syntax = 1

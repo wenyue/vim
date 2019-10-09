@@ -1,0 +1,3 @@
+let g:project = '***'
+let g:enable_ycm = 1
+let g:enable_ale = 1
