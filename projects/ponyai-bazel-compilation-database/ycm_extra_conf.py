@@ -36,28 +36,66 @@ import sys
 import xml.etree.ElementTree as ElementTree
 
 external_flags = [
-    '-std=c++14',
-    '-x',
-    'c++',
-    '-isystem',
-    '/usr/include/x86_64-linux-gnu/qt5/',
-    '-isystem',
-    '/usr/include/x86_64-linux-gnu/qt5/QtWidgets/',
-    '-isystem',
-    '/usr/include/x86_64-linux-gnu/qt5/QtGui/',
-    '-isystem',
-    '/usr/include/x86_64-linux-gnu/qt5/QtCore/',
-    '-isystem',
-    '$PONYAI_PATH/.sub-repos/make8-bin/',
-    '-isystem',
-    '$PONYAI_PATH/.sub-repos/make8-bin/external',
-    '-isystem',
-    '$PONYAI_PATH/.sub-repos/make8-bin/external/glog/',
-    '-isystem',
-    '$PONYAI_PATH/.sub-repos/make8-bin/external/pstreams/',
-    '-isystem',
-    '$PONYAI_PATH/.sub-repos/make8-bin/external/gflags/include/',
-]
+        '-std=c++14',
+        '-x',
+        'c++',
+        '-isystem',
+        '/usr/include/x86_64-linux-gnu/qt5/',
+        '-isystem',
+        '/usr/include/x86_64-linux-gnu/qt5/QtWidgets/',
+        '-isystem',
+        '/usr/include/x86_64-linux-gnu/qt5/QtGui/',
+        '-isystem',
+        '/usr/include/x86_64-linux-gnu/qt5/QtCore/',
+        '-isystem',
+        '$PONYAI_PATH/.sub-repos/make8-bin/',
+        '-isystem',
+        '$PONYAI_PATH/.sub-repos/make8-bin/external',
+        '-isystem',
+        '$PONYAI_PATH/.sub-repos/make8-bin/external/glog/',
+        '-isystem',
+        '$PONYAI_PATH/.sub-repos/make8-bin/external/pstreams/',
+        '-isystem',
+        '$PONYAI_PATH/.sub-repos/make8-bin/external/gflags/include/',
+        ]
+
+def create_missing_packages(err):
+    missing_packages = re.findall("no such package '(.*)': BUILD file not found on package path and referenced by", err)
+    if len(missing_packages) == 0:
+        return False
+
+    package_str = """
+package(default_visibility = ["//visibility:public"])
+    """
+    for package in missing_packages:
+        build_filename = os.path.join(package, 'BUILD')
+        if os.path.exists(build_filename):
+            continue
+        if not os.path.exists(package):
+            os.makedirs(package)
+        with open(build_filename, 'w+') as f:
+            f.write(package_str)
+    return True
+
+def create_missing_targets(err):
+    missing_targets = re.findall("no such target '//(.*)': target", err)
+    if len(missing_targets) == 0:
+        return False
+
+    cc_library_str = """
+cc_library(
+    name = "%s",
+)
+    """
+    created_targets = set()
+    for target in missing_targets:
+        path, target_name = target.split(':')
+        if target in created_targets:
+            continue
+        created_targets.add(target)
+        with open(os.path.join(path, 'BUILD'), 'a') as f:
+            f.write(cc_library_str % target_name)
+    return True
 
 def bazel_info():
     """Returns a dict containing key values from bazel info."""
@@ -80,10 +118,15 @@ def bazel_query(args):
     """Executes bazel query with the given args and returns the output."""
 
     # TODO: switch to cquery when it supports siblings and less crash-y with external repos.
-    query_cmd = ['bazel', 'query'] + args
-    FNULL = open(os.devnull, 'w')
-    proc = subprocess.Popen(query_cmd, stdout=subprocess.PIPE, stderr=FNULL)
-    return proc.communicate()[0].decode('utf-8')
+    query_cmd = ['bazel', 'query', '--keep_going'] + args
+    # Try 10 time
+    for _ in xrange(10):
+        FNULL = open(os.devnull, 'w')
+        proc = subprocess.Popen(query_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        output, err = proc.communicate()
+        if not create_missing_packages(err) and not create_missing_targets(err):
+            break
+    return output.decode('utf-8')
 
 def file_to_target(filepath):
     """Returns a string that works as a bazel target specification for the given file."""
@@ -176,26 +219,26 @@ def standardize_flags(flags, bazel_workspace):
     return flags
 
 def make_relative_paths_in_flags_absolute(flags):
-  new_flags = []
-  make_next_absolute = False
-  path_flags = ['-isystem', '-I', '-iquote', '--sysroot=']
-  for flag in flags:
-    new_flag = flag
+    new_flags = []
+    make_next_absolute = False
+    path_flags = ['-isystem', '-I', '-iquote', '--sysroot=']
+    for flag in flags:
+        new_flag = flag
 
-    if make_next_absolute:
-      make_next_absolute = False
-      if flag.startswith('$'):
-        variable, _, flag = flag.partition('/')
-        new_flag = os.path.join(os.environ[variable[1:]], flag)
+        if make_next_absolute:
+            make_next_absolute = False
+        if flag.startswith('$'):
+            variable, _, flag = flag.partition('/')
+            new_flag = os.path.join(os.environ[variable[1:]], flag)
 
-    for path_flag in path_flags:
-      if flag == path_flag:
-        make_next_absolute = True
-        break
+        for path_flag in path_flags:
+            if flag == path_flag:
+                make_next_absolute = True
+                break
 
-    if new_flag:
-      new_flags.append(new_flag)
-  return new_flags
+        if new_flag:
+            new_flags.append(new_flag)
+    return new_flags
 
 #pylint: disable=W0613,C0103
 def FlagsForFile(filename, **kwargs):
@@ -213,7 +256,7 @@ def FlagsForFile(filename, **kwargs):
     os.chdir(bazel_workspace)
     # Valid prefixes for the file, in decreasing order of specificity.
     file_prefix = [p for p in [bazel_genfiles, bazel_bin, bazel_exec_root, bazel_workspace]
-                   if filename.startswith(p)]
+            if filename.startswith(p)]
     if not file_prefix:
         sys.exit("Not a valid file: " + filename)
 
@@ -226,7 +269,7 @@ def FlagsForFile(filename, **kwargs):
 
     cc_rules = "cc_(library|binary|test|inc_library|proto_library)"
     query_result = bazel_query([('kind("{cc_rules}", rdeps(siblings({f}), {f}, 1))'
-                                 .format(f=file_target, cc_rules=cc_rules)), '--keep_going'])
+        .format(f=file_target, cc_rules=cc_rules)), '--keep_going'])
 
     labels = [label.partition(" ")[0] for label in query_result.split('\n') if label]
 
@@ -234,22 +277,22 @@ def FlagsForFile(filename, **kwargs):
         sys.exit("No cc rules depend on this source file.")
 
     repository_override = '--override_repository=bazel_compdb=' + os.path.dirname(
-        os.path.realpath(__file__))
+            os.path.realpath(__file__))
 
     aspect_definition = '--aspects=@bazel_compdb//:aspects.bzl%compilation_database_aspect'
 
     bazel_aspects = [
-        'bazel',
-        'build',
-        aspect_definition,
-        repository_override,
-        '--output_groups=compdb_files',
-    ] + labels
+            'bazel',
+            'build',
+            aspect_definition,
+            repository_override,
+            '--output_groups=compdb_files',
+            ] + labels
     proc = subprocess.Popen(bazel_aspects, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = proc.communicate()
     if proc.returncode != 0:
         errors = [e for e in out.splitlines() + err.splitlines()
-                  if e.startswith("ERROR:")]
+                if e.startswith("ERROR:")]
         if errors:
             raise Exception('/'.join(errors))
         else:
@@ -262,11 +305,11 @@ def FlagsForFile(filename, **kwargs):
     flags = make_relative_paths_in_flags_absolute(flags)
 
     return {
-        'flags': flags,
-        'include_paths_relative_to_dir': bazel_exec_root,
-        }
+            'flags': flags,
+            'include_paths_relative_to_dir': bazel_exec_root,
+            }
 
-# For testing; needs exactly one argument as path of file.
+    # For testing; needs exactly one argument as path of file.
 if __name__ == '__main__':
     filename = os.path.abspath(sys.argv[1])
     print(FlagsForFile(filename))
