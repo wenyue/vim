@@ -1,4 +1,5 @@
-autocmd! bufwritepost *.vim source %
+autocmd! BufWritePost *.vim source %
+
 " -------------------------------------公用配置---------------------------------
 if !exists("g:os")
     if has("win64") || has("win32") || has("win16")
@@ -20,8 +21,8 @@ endfunction
 " workspace中的配置
 let g:root_path = ToUnixPath(expand('%:p:h'))
 let g:work_path = g:root_path
-let g:enable_ycm = 1
-let g:enable_ale = 1
+let g:enable_ycm = 0
+let g:enable_ale = 0
 
 let s:workspace = findfile('workspace.vim', '.;')
 if !empty(s:workspace)
@@ -39,6 +40,9 @@ set nocompatible
 
 " 自动读取变更
 set autoread
+if has("autocmd")
+  autocmd BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
+endif
 
 " 配置leader键
 let mapleader = '\'
@@ -86,11 +90,11 @@ if g:os == 'Windows'
     endfunction
     autocmd QuickfixCmdPost grep call QfMakeConv()
 endif
-function! SaveAsUTF8()
+function! OpenAsUTF8()
     set fileencoding=UTF-8
     set nobomb
 endfunction
-autocmd FileType lua,python,vim call SaveAsUTF8()
+autocmd FileType lua,python,vim call OpenAsUTF8()
 
 " 设置补全顺序
 set cpt=.,w,b
@@ -101,7 +105,7 @@ set vb
 " 设置path
 function! SetPath()
     set path=.
-    silent execute 'set path+='.substitute(g:work_path.'/**', ' ', '\\ ', 'g')
+    execute 'set path+='.substitute(g:work_path.'/**', ' ', '\\ ', 'g')
 endfunction
 call SetPath()
 
@@ -110,9 +114,17 @@ nn <C-h> <C-w>h
 nn <C-j> <C-w>j
 nn <C-k> <C-w>k
 nn <C-l> <C-w>l
+tno <C-h> <C-w>h
+tno <C-j> <C-w>j
+tno <C-k> <C-w>k
+tno <C-l> <C-w>l
 
+" Split方向
 set splitbelow
 set splitright
+
+" 退出'terminal mode'
+tno <Esc> <C-\><C-n>
 
 " 折行移动
 nn j gj
@@ -153,13 +165,15 @@ set guioptions-=T
 set guioptions-=m
 
 " 启动最大化
-if g:os == 'Windows'
+if has('gui_running')
+  if g:os == 'Windows'
     autocmd GUIEnter * simalt ~x
-else
-    function! MaximizeWindow()
-        silent !wmctrl -r :ACTIVE: -b add,maximized_vert,maximized_horz
-    endfunction
-    autocmd GUIEnter * call MaximizeWindow()
+  endif
+endif
+
+" gvim字体
+if has('gui_running')
+  set guifont=Monospace\ 13
 endif
 
 " 折行设置
@@ -172,34 +186,35 @@ set foldlevel=99
 nn <space> za
 
 " 标签名字
-function! NeatBuffer(bufnr, fullname)
-    let l:name = bufname(a:bufnr)
-    if getbufvar(a:bufnr, '&modifiable')
-        if l:name == ''
-            return '[No Name]'
-        else
-            if a:fullname
-                return fnamemodify(l:name, ':p')
-            else
-                return fnamemodify(l:name, ':t')
-            endif
-        endif
-    else
-        let l:buftype = getbufvar(a:bufnr, '&buftype')
-        if l:buftype == 'quickfix'
-            return '[Quickfix]'
-        elseif l:name != ''
-            if a:fullname
-                return '-'.fnamemodify(l:name, ':p')
-            else
-                return '-'.fnamemodify(l:name, ':t')
-            endif
-        else
-        endif
-        return '[No Name]'
-    endif
-endfunc
-
+if g:os == 'Windows'
+  function! NeatBuffer(bufnr, fullname)
+      let l:name = bufname(a:bufnr)
+      if getbufvar(a:bufnr, '&modifiable')
+          if l:name == ''
+              return '[No Name]'
+          else
+              if a:fullname
+                  return fnamemodify(l:name, ':p')
+              else
+                  return fnamemodify(l:name, ':t')
+              endif
+          endif
+      else
+          let l:buftype = getbufvar(a:bufnr, '&buftype')
+          if l:buftype == 'quickfix'
+              return '[Quickfix]'
+          elseif l:name != ''
+              if a:fullname
+                  return '-'.fnamemodify(l:name, ':p')
+              else
+                  return '-'.fnamemodify(l:name, ':t')
+              endif
+          else
+          endif
+          return '[No Name]'
+      endif
+  endfunc
+endif
 function! NeatGuiTabLabel()
     let l:num = v:lnum
     let l:buflist = tabpagebuflist(l:num)
@@ -282,7 +297,7 @@ if g:os == 'Windows'
         silent execute 'b #'
         silent execute 'bd #'
     endfunction
-    autocmd bufenter *.jpg,*.png silent call OpenPic(expand('<afile>'))
+    autocmd BufEnter *.jpg,*.png silent call OpenPic(expand('<afile>'))
 endif
 
 " 打开文件所在目录
@@ -315,6 +330,10 @@ let g:fsnonewfiles = "on"
 " 开始加载plugs
 execute 'source' s:base_path.'/scripts/plug.vim'
 call plug#begin(s:plugged_path)
+
+" 异步运行
+Plug 'skywind3000/asyncrun.vim'
+let g:asyncrun_open = 10
 
 " 文件查找
 " <leader>f     Search files
@@ -359,12 +378,9 @@ let g:EasyGrepRoot = g:work_path
 
 " 自动补全
 " <leader>d     Go to definition or declaration
+" <leader>z     FixIt
 if g:enable_ycm == 1
-    if g:os == 'Windows'
-        Plug 'Valloric/YouCompleteMe', {'do': 'python install.py --msvc 14'}
-    else
-        Plug 'Valloric/YouCompleteMe', {'do': 'python install.py --clang-completer'}
-    endif
+    Plug 'Valloric/YouCompleteMe'
     set completeopt=menuone,preview
     autocmd InsertLeave * if pumvisible() == 0|pclose|endif
     let g:ycm_collect_identifiers_from_tags_files=0
@@ -374,6 +390,7 @@ if g:enable_ycm == 1
     let g:ycm_show_diagnostics_ui = 1
     let g:ycm_max_diagnostics_to_display = 100
     nn <leader>d :YcmCompleter GoToDefinitionElseDeclaration<CR>
+    nn <leader>z :YcmCompleter FixIt<CR>
 endif
 
 " 语法检测
@@ -409,6 +426,11 @@ map <silent> <leader>c <plug>NERDCommenterToggle
 " <leader>hs    Stage
 " <leader>hu    Undo
 Plug 'airblade/vim-gitgutter'
+let g:gitgutter_sign_allow_clobber = 0
+let g:gitgutter_sign_priority = 0
+
+" 开始布局
+Plug 'mhinz/vim-startify'
 
 " 主题
 Plug 'altercation/vim-colors-solarized'
