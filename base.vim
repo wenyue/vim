@@ -316,7 +316,7 @@ let s:base_path = ToUnixPath(expand('<sfile>:p:h'))
 let s:plugged_path = ToUnixPath(expand('<sfile>:p:h:h').'/plugged')
 
 " 添加tools目录
-if !exists('s:tools_path')
+if g:os == 'Windows' && !exists('s:tools_path')
     let s:tools_path = s:base_path.'/tools'
     let $PATH .= ';'.s:tools_path
 endif
@@ -351,8 +351,7 @@ if g:os == 'Windows'
 else
     let g:ctrlp_user_command = 'ag -i %s -l --nocolor -f -g ""'
 endif
-let g:ctrlp_user_command .= ' --ignore="*.pyo"'
-let g:ctrlp_user_command .= ' --ignore="*.pyc"'
+let g:ctrlp_user_command .= ' --ignore="*.pyo" --ignore="*.pyc"'
 let g:ctrlp_prompt_mappings = {
             \ 'AcceptSelection("e")': [],
             \ 'AcceptSelection("r")': ['<cr>', '<2-LeftMouse>'],
@@ -363,6 +362,12 @@ endfunction
 map <silent> <leader>f :call CtrlP() <CR>
 
 " 全文搜索
+" Plug 'brooth/far.vim'
+" let g:far#source = 'ag'
+
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+Plug '~/.fzf'
+
 " <leader>vv    Global search
 " <leader>vr    Global replace
 Plug 'wenyue/vim-easygrep'
@@ -394,20 +399,20 @@ if g:enable_ycm == 1
 endif
 
 " 语法检测
-" Disable c family linter.
 if g:enable_ale == 1
-    Plug 'w0rp/ale', {'do': 'pip install flake8 cpplint'}
+    Plug 'w0rp/ale', {'do': 'pip install flake8 yapf'}
     let g:ale_linters = {
                 \   'python': ['flake8'],
-                \   'c': ['cpplint'],
-                \   'cpp': ['cpplint'],
+                \}
+    let g:ale_fixers = {
+                \   'python': ['yapf'],
                 \}
 endif
 
 " 格式整理
 " <leader>s     Format
 " <,><leader>s  Range Format
-Plug 'Chiel92/vim-autoformat'
+Plug 'Chiel92/vim-autoformat', {'do': 'pip install yapf'}
 map <silent> <leader>s :Autoformat<CR>
 
 " 快速注释

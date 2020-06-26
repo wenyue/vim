@@ -5,7 +5,7 @@ set tabstop=2
 set softtabstop=2
 set shiftwidth=2
 
-" esay
+" esaygrep
 let g:EasyGrepFilesToExclude .= ',common/experimental,make8-bin,bazel*'
 
 " autoformat
